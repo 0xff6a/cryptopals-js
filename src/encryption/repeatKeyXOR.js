@@ -1,6 +1,6 @@
 var utils = require('../utils.js');
 //
-// Encrypts a ciphertext using single char XOR with unknown key
+// Encrypts a ciphertext using repeat XOR given a key
 //
 // Buffer, Buffer -> Buffer
 //

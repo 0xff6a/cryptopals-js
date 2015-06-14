@@ -112,8 +112,9 @@ describe('Set 1', function() {
           .slice(0, 150);
       
       expect(result).to.eql(
-        "I\'m back and I\'m ringin\' the bell \nA rockin\' on the mike while the fly girls yell \n" + 
-        "In ecstasy in the back of me \nWell that\'s my DJ Deshay cuttin\' all "
+        "I\'m back and I\'m ringin\' the bell \nA rockin\' on the mike while" +
+        " the fly girls yell \nIn ecstasy in the back of me \nWell that\'s my" +
+        " DJ Deshay cuttin\' all "
       );
     });
   });
