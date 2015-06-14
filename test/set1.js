@@ -1,3 +1,4 @@
+var fs         = require('fs');
 var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
@@ -50,6 +51,25 @@ describe('Set 1', function() {
       var decrypted = encryption.singleCharXOR.decrypt(ciphertext).plaintext;
 
       expect(decrypted).to.eql(plaintext);
+    });
+  });
+
+  describe('Challenge 4 - SKIP FOR SPEED', function() {
+    it.skip('should detect single char XOR from a set of sample strings', function() {
+      var data   = fs.readFileSync('resources/4.txt');
+      var result = 
+        data
+          .toString()
+          .split("\n")
+          .map(function(ct) {
+            return encryption.singleCharXOR.decrypt(ct);
+          })
+          .sort(function(a, b) {
+            return (a.score - b.score);
+          })[0]
+          .plaintext;
+
+      expect(result).to.eql("Now that the party is jumping\n");
     });
   });
 });

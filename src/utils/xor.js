@@ -14,17 +14,19 @@ function hex(hex1, hex2) {
 // Buffer, Buffer -> Buffer
 //
 function bitwiseXOR(buf1, buf2) {
+  var result;
+
   if ( buf1.length !== buf2.length ) {
     throw new Error('Bad Arguments: uneqal size buffers');
-  } else {
-    var result = new Buffer(buf1.length);
+  } 
+  
+  result = new Buffer(buf1.length);
 
-    for (var i = 0; i < buf1.length; i++) {
-      result[i] = buf1[i] ^ buf2[i];
-    }
-
-    return result;
+  for (var i = 0; i < buf1.length; i++) {
+    result[i] = buf1[i] ^ buf2[i];
   }
+
+  return result;
 }
 
 exports.hex   = hex;
