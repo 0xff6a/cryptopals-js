@@ -28,7 +28,7 @@ describe('Set 1', function() {
     });
   });
 
-  describe('Challenge 3 - single char XOR', function() {
+  describe('Challenge 3 - implement single char XOR', function() {
     it('should evaluate the frequency of characters in a string', function() {
       expect(analyzers.textScorer.absoluteFreq('abbcccddddeeeee')).to.eql({
         "a": 1, "b": 2, "c": 3, "d": 4, "e": 5
@@ -44,55 +44,87 @@ describe('Set 1', function() {
     });
 
     it('should decrypt single char XOR', function() {
-      var ciphertext = 
-      "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-      var plaintext = 
-      "Cooking MC\'s like a pound of bacon";
-      var decrypted = encryption.singleCharXOR.decrypt(ciphertext).plaintext;
+      var bufCt = 
+        new Buffer("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", 'hex');
+      var plaintext = new Buffer("Cooking MC\'s like a pound of bacon");
+      var decrypted = encryption.singleCharXOR.decrypt(bufCt);
 
       expect(decrypted).to.eql(plaintext);
     });
   });
 
   describe('Challenge 4 - detect single char XOR (SKIP FOR SPEED)', function() {
-    it.skip('should detect single char XOR from a set of sample strings', function() {
-      var data   = fs.readFileSync('resources/4.txt');
-      var result = 
-        data
+    it('should detect single char XOR from a set of sample strings', function() {
+      var data = 
+        fs
+          .readFileSync('resources/4.txt')
           .toString()
           .split("\n")
           .map(function(ct) {
-            return encryption.singleCharXOR.decrypt(ct);
-          })
-          .sort(function(a, b) {
-            return (a.score - b.score);
-          })[0]
-          .plaintext;
+            return new Buffer(ct, 'hex');
+          });
 
-      expect(result).to.eql("Now that the party is jumping\n");
+      var result = encryption.singleCharXOR.detect(data);
+      var bufPt  = new Buffer("Now that the party is jumping\n");
+      
+      expect(result).to.eql(bufPt);
     });
   });
 
   describe('Challenge 5 - implement repeat key XOR', function() {
     it('should encrypt under repeat key XOR', function() {
-      var key = 'ICE';
-      var plaintext = 
-      "Burning 'em, if you ain't quick and nimble\n" +
-      "I go crazy when I hear a cymbal";
-      var ciphertext = 
-      "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272" +
-      "a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
+      var bufKey = new Buffer('ICE');
+      var bufPt  = 
+        new Buffer(
+          "Burning 'em, if you ain't quick and nimble\n" +
+          "I go crazy when I hear a cymbal"
+        );
+      var bufCt = 
+        new Buffer(
+          "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272" +
+          "a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f", 'hex'
+        );
 
-      expect(encryption.repeatKeyXOR.encrypt(plaintext, key)).to.eql(ciphertext);
+      expect(encryption.repeatKeyXOR.encrypt(bufPt, bufKey)).to.eql(bufCt);
     });
   });
 
   describe('Challenge 6 - break repeat key XOR', function() {
-    it('should calculate the hamming distance between two strings', function() {
+    it.skip('should calculate the hamming distance between two strings', function() {
       var s1 = 'this is a test';
       var s2 = 'wokka wokka!!!';
 
       expect(analyzers.hamming.distance(s1,s2)).to.eql(37);
+    });
+  });
+
+  describe('Challenge 7 - AES in ECB mode', function() {
+    it('should decrypt an AES-ECB encrypted ciphertext given the key', function() {
+      var key    = new Buffer('YELLOW SUBMARINE');
+
+      // newline character doesnt play well with built in decoder for b64
+      var data   = new Buffer(fs.readFileSync('resources/7.txt', 'ascii'), 'base64');
+      var result = 
+        encryption
+          .aesECB
+          .decrypt(data, key)
+          .toString('ascii')
+          .slice(0, 150);
+      
+      expect(result).to.eql(
+        "I\'m back and I\'m ringin\' the bell \nA rockin\' on the mike while the fly girls yell \n" + 
+        "In ecstasy in the back of me \nWell that\'s my DJ Deshay cuttin\' all "
+      );
+    });
+  });
+
+  describe('Challenge 8 - detect AES in ECB mode', function() {
+    it.skip('should detect AES-ECB encryption', function() {
+      var data = fs.readFileSync('resources/4.txt').toString().split("\n");
+
+      result = data.map(function(ct) {
+
+      });
     });
   });
 });

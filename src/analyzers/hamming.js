@@ -2,11 +2,9 @@ var utils = require('../utils.js');
 //
 // Calculate hamming distance (number different bits) between two strings
 //
-// String (ascii), String (ascii) -> Number
+// Buffer, Buffer -> Number
 //
-function distance(s1, s2) {
-  var buf1   = new Buffer(s1);
-  var buf2   = new Buffer(s2);
+function distance(buf1, buf2) {
   var xord   = utils.xor.bytes(buf1, buf2);
   var result = 0;
 

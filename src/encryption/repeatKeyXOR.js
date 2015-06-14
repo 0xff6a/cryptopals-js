@@ -2,19 +2,17 @@ var utils = require('../utils.js');
 //
 // Encrypts a ciphertext using single char XOR with unknown key
 //
-// String (ascii), String (ascii) -> String (hex)
+// Buffer, Buffer -> Buffer
 //
-function encrypt(plaintext, key) {
-  var bufKey = new Buffer(key);
-  var bufPt  = new Buffer(plaintext);
-  var buf    = new Buffer(plaintext.length);
+function encrypt(bufPt, bufKey) {
+  var bufCt  = new Buffer(bufPt.length);
   var keyLen = bufKey.length;
 
-  for (var i = 0; i <= bufPt.length; i++) {
-    buf[i] = bufPt[i] ^ bufKey[i % keyLen];
+  for (var i = 0; i < bufPt.length; i++) {
+    bufCt[i] = bufPt[i] ^ bufKey[i % keyLen];
   }
 
-  return buf.toString('hex');
+  return bufCt;
 }
 
 exports.encrypt = encrypt;

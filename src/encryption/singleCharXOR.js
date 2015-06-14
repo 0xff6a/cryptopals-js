@@ -3,25 +3,43 @@ var analyzers = require('../analyzers.js');
 //
 // Decrypts a ciphertext using single char XOR with unknown key
 //
-// String (hex) -> Result
+// Buffer -> Buffer
 //
-function decrypt(ciphertext) {
-  var buf = new Buffer(ciphertext, 'hex');
-  var len = buf.length;
+function decrypt(bufCt) {
+  return decryptInfo(bufCt).plaintext;
+}
+//
+// Detects a single char XOR encoded string from an array
+//
+// Array(Buffer) -> Buffer
+//
+function detect(bufCts) {
+  return bufCts
+    .map(function(ct) {
+      return decryptInfo(ct);
+    })
+    .sort(function(a, b) {
+      return (a.score - b.score);
+    })[0]
+    .plaintext;
+}
+
+function decryptInfo(bufCt) {
+  var len = bufCt.length;
   var res = new Result();
-  var candidate;
-  var key;
+  var bufTemp;
+  var bufKey;
   var score;
 
   for (var k = 0; k < 256; k++) {
-    key       = buildKey(k, len);
-    candidate = utils.xor.bytes(buf, key).toString('ascii');
-    score     = analyzers.textScorer.calculate(candidate);
+    bufKey  = buildKey(k, len);
+    bufTemp = utils.xor.bytes(bufCt, bufKey);
+    score   = analyzers.textScorer.calculate(bufTemp);
 
     if (score < res.score) {
       res.score     = score;
-      res.key       = key;
-      res.plaintext = candidate;
+      res.key       = bufKey;
+      res.plaintext = bufTemp;
     }
   }
 
@@ -35,11 +53,12 @@ function Result() {
 }
 
 function buildKey(charCode, len) {
-  var buf = new Buffer(len);
+  var bufKey = new Buffer(len);
 
-  buf.fill(String.fromCharCode(charCode));
+  bufKey.fill(String.fromCharCode(charCode));
 
-  return buf;
+  return bufKey;
 }
 
 exports.decrypt = decrypt;
+exports.detect  = detect;

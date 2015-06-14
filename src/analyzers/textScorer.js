@@ -31,10 +31,14 @@ var BENCHMARK =
 // 
 // Calculate frequency each byte appears in a given string
 //
-// String (ascii) -> Object
+// Buffer, Number -> Object
 //
-function frequency(string, unit) {
-  var chars = string.toLowerCase().split('');
+function frequency(buf, unit) {
+  var chars = 
+    buf
+      .toString()
+      .toLowerCase()
+      .split('');
 
   return chars.reduce( function(result, char) {
     result[char] = (result[char] || 0) + unit;
@@ -45,10 +49,10 @@ function frequency(string, unit) {
 //
 // Calculate frequency difference from benchmark
 //
-// String (ascii) -> Number
+// Buffer -> Number
 //
-function calculate(string) {
-  var freq = relativeFreq(string);
+function calculate(buf) {
+  var freq = relativeFreq(buf);
 
   return Object.keys(BENCHMARK).reduce( function(sumSq, char) {
     return Math.sqrt(
