@@ -1,6 +1,6 @@
 var utils = require('../utils.js');
 //
-// Encrypts a ciphertext using repeat XOR given a key
+// Encrypts a plaintext using repeat XOR given a key
 //
 // Buffer, Buffer -> Buffer
 //
@@ -16,3 +16,6 @@ function encrypt(bufPt, bufKey) {
 }
 
 exports.encrypt = encrypt;
+
+// ================================================================================================
+// ================================================================================================

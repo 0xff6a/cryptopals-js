@@ -63,6 +63,12 @@ function calculate(buf) {
   }, 0);
 }
 
+exports.calculate    = calculate;
+exports.absoluteFreq = absoluteFreq;
+
+// ================================================================================================
+// ================================================================================================
+
 function relativeFreq(string) {
   return frequency(string, 1.0 / string.length);
 }
@@ -70,7 +76,3 @@ function relativeFreq(string) {
 function absoluteFreq(string) {
   return frequency(string, 1.0);
 }
-
-exports.calculate    = calculate;
-exports.absoluteFreq = absoluteFreq;
-

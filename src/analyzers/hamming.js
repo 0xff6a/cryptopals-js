@@ -15,8 +15,11 @@ function distance(buf1, buf2) {
   return result; 
 }
 
+exports.distance = distance;
+
+// ================================================================================================
+// ================================================================================================
+
 function countPattern(string, pattern) {
   return string.split(pattern).length - 1;
 }
-
-exports.distance = distance;

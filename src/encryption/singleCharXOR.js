@@ -24,6 +24,12 @@ function detect(bufCts) {
     .plaintext;
 }
 
+exports.decrypt = decrypt;
+exports.detect  = detect;
+
+// ================================================================================================
+// ================================================================================================
+
 function decryptInfo(bufCt) {
   var len = bufCt.length;
   var res = new Result();
@@ -59,6 +65,3 @@ function buildKey(charCode, len) {
 
   return bufKey;
 }
-
-exports.decrypt = decrypt;
-exports.detect  = detect;
