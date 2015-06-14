@@ -1,4 +1,4 @@
-var utils     = require('../utils.js');
+var utils = require('../utils.js');
 //
 // Encrypts a ciphertext using single char XOR with unknown key
 //

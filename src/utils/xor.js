@@ -19,7 +19,7 @@ function bitwiseXOR(buf1, buf2) {
   if ( buf1.length !== buf2.length ) {
     throw new Error('Bad Arguments: uneqal size buffers');
   } 
-  
+
   result = new Buffer(buf1.length);
 
   for (var i = 0; i < buf1.length; i++) {

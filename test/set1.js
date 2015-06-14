@@ -89,7 +89,10 @@ describe('Set 1', function() {
 
   describe('Challenge 6 - break repeat key XOR', function() {
     it('should calculate the hamming distance between two strings', function() {
-      
+      var s1 = 'this is a test';
+      var s2 = 'wokka wokka!!!';
+
+      expect(analyzers.hamming.distance(s1,s2)).to.eql(37);
     });
   });
 });
