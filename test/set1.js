@@ -1,6 +1,7 @@
 var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
+var analyzers  = require('../src/analyzers.js');
 
 describe('Set 1', function() {
   describe('Challenge 1', function() {
@@ -27,13 +28,28 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 3', function() {
+    it('Can evaluate the frequency of characters in a string', function() {
+      expect(analyzers.textScorer.absoluteFreq('abbcccddddeeeee')).to.eql({
+        "a": 1, "b": 2, "c": 3, "d": 4, "e": 5
+      });
+    });
+
+    it('Can score strings based on character frequency vs average', function() {
+      var english = analyzers.textScorer.calculate('hello my name is jeremy');
+      var bad     = analyzers.textScorer.calculate('hello my name is £&(*fhcsjkbv');
+      var worse   = analyzers.textScorer.calculate('sml£&0m,c');
+
+      expect([bad, english, worse].sort()).to.eql([english, bad, worse]);
+    });
+
     it('should decrypt single char XOR', function() {
       var ciphertext = 
       "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
       var plaintext = 
-      "hello";
+      "Cooking MC\'s like a pound of bacon";
+      var decrypted = encryption.singleCharXOR.decrypt(ciphertext).plaintext;
 
-      expect(encryption.singleCharXOR.decrypt(ciphertext)).to.eq(plaintext);
+      expect(decrypted).to.eql(plaintext);
     });
   });
 });
