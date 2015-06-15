@@ -55,8 +55,6 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 4 - detect single char XOR (SKIP FOR SPEED)', function() {
-    this.timeout(3000);
-
     it('should detect single char XOR from a set of sample strings', function() {
       var data = 
         fs
