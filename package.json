@@ -21,7 +21,7 @@
   "homepage": "https://github.com/foxjerem/cryptopals-js",
   "engines" : 
   { 
-    "node" : ">=0.12.4" 
+    "node" : ">=0.12.0" 
     },
   "dependencies": {
     "underscore": "^1.8.3"
