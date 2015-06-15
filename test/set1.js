@@ -3,6 +3,7 @@ var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
 var analyzers  = require('../src/analyzers.js');
+var oracles    = require('../src/oracles.js');
 
 describe('Set 1', function() {
   describe('Challenge 1 - Hex to Base64', function() {
@@ -37,7 +38,7 @@ describe('Set 1', function() {
 
     it('should score strings based on character frequency vs average', function() {
       var english = analyzers.textScorer.calculate('hello my name is jeremy');
-      var bad     = analyzers.textScorer.calculate('hello my name is £&(*fhcsjkbv');
+      var bad     = analyzers.textScorer.calculate('hello sjkbv');
       var worse   = analyzers.textScorer.calculate('sml£&0m,c');
 
       expect([bad, english, worse].sort()).to.eql([english, bad, worse]);
@@ -54,7 +55,7 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 4 - detect single char XOR (SKIP FOR SPEED)', function() {
-    it('should detect single char XOR from a set of sample strings', function() {
+    it.skip('should detect single char XOR from a set of sample strings', function() {
       var data = 
         fs
           .readFileSync('resources/4.txt')
@@ -120,12 +121,21 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 8 - detect AES in ECB mode', function() {
-    it.skip('should detect AES-ECB encryption', function() {
-      var data = fs.readFileSync('resources/4.txt').toString().split("\n");
+    it('should detect AES-ECB encryption', function() {
+      var data = 
+        fs
+          .readFileSync('resources/8.txt')
+          .toString()
+          .split("\n");
 
-      result = data.map(function(ct) {
+      result = data.filter(function(ct) {
+        var bufCt = new Buffer(ct, 'hex');
 
+        return oracles.aesECB.detect(bufCt);
       });
+
+      expect(result.length).to.eql(1);
+      expect(data.indexOf(result.toString())).to.eql(132);
     });
   });
 });

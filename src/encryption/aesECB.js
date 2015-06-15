@@ -1,4 +1,6 @@
 var crypto = require('crypto');
+
+var BLOCK_SIZE = 16;
 //
 // Decrypts a ciphertext using AES in ECB mode
 //
@@ -18,5 +20,24 @@ function decrypt(bufPt, bufKey) {
 
   return data;
 }
+//
+// Return AES blocks from a buffer
+//
+// Buffer -> Array(Buffer)
+//
+function blocks(buf) {
+  var numBlocks = Math.ceil(buf.length / BLOCK_SIZE);
+  var result    = [];
+  var offset    = 0;
 
-exports.decrypt = decrypt;
+  for (var i = 0; i < numBlocks; i++ ) {
+    result.push(buf.slice(offset, BLOCK_SIZE + offset));
+    offset += BLOCK_SIZE;
+  }
+
+  return result;
+}
+
+exports.decrypt    = decrypt;
+exports.blocks     = blocks;
+exports.BLOCK_SIZE = BLOCK_SIZE;

@@ -53,14 +53,13 @@ function frequency(buf, unit) {
 //
 function calculate(buf) {
   var freq = relativeFreq(buf);
+  var sumSq;
 
-  return Object.keys(BENCHMARK).reduce( function(sumSq, char) {
-    return Math.sqrt(
-      Math.pow(
-        sumSq + (BENCHMARK[char] - (freq[char] || 0)), 2
-      )
-    );
+  sumSq = Object.keys(BENCHMARK).reduce( function(accum, char) {
+      return accum + Math.pow((BENCHMARK[char] - (freq[char] || 0)), 2);
   }, 0);
+
+  return Math.sqrt(sumSq);
 }
 
 exports.calculate    = calculate;
@@ -69,10 +68,10 @@ exports.absoluteFreq = absoluteFreq;
 // ================================================================================================
 // ================================================================================================
 
-function relativeFreq(string) {
-  return frequency(string, 1.0 / string.length);
+function relativeFreq(buf) {
+  return frequency(buf, 1.0 / buf.length);
 }
 
-function absoluteFreq(string) {
-  return frequency(string, 1.0);
+function absoluteFreq(buf) {
+  return frequency(buf, 1.0);
 }
