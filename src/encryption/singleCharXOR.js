@@ -5,7 +5,7 @@ var analyzers = require('../analyzers.js');
 //
 // Buffer -> Buffer
 //
-function decrypt(bufCt) {
+function decryptNoKey(bufCt) {
   return decryptInfo(bufCt).plaintext;
 }
 //
@@ -24,12 +24,6 @@ function detect(bufCts) {
     .plaintext;
 }
 
-exports.decrypt = decrypt;
-exports.detect  = detect;
-
-// ================================================================================================
-// ================================================================================================
-
 function decryptInfo(bufCt) {
   var len = bufCt.length;
   var res = new Result();
@@ -44,13 +38,21 @@ function decryptInfo(bufCt) {
 
     if (score < res.score) {
       res.score     = score;
-      res.key       = bufKey;
+      res.key       = new Buffer(String.fromCharCode(k));
       res.plaintext = bufTemp;
     }
   }
 
   return res;
 }
+
+exports.decryptInfo  = decryptInfo
+exports.decryptNoKey = decryptNoKey;
+exports.detect       = detect;
+
+// ================================================================================================
+// ================================================================================================
+
 
 function Result() {
   this.key       = '';

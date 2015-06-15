@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var utils  = require('../utils.js');
 
 var BLOCK_SIZE = 16;
 //
@@ -26,16 +27,7 @@ function decrypt(bufPt, bufKey) {
 // Buffer -> Array(Buffer)
 //
 function blocks(buf) {
-  var numBlocks = Math.ceil(buf.length / BLOCK_SIZE);
-  var result    = [];
-  var offset    = 0;
-
-  for (var i = 0; i < numBlocks; i++ ) {
-    result.push(buf.slice(offset, BLOCK_SIZE + offset));
-    offset += BLOCK_SIZE;
-  }
-
-  return result;
+  return utils.blocks(buf, BLOCK_SIZE);
 }
 
 exports.decrypt    = decrypt;

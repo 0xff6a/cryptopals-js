@@ -48,14 +48,14 @@ describe('Set 1', function() {
       var bufCt = 
         new Buffer("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", 'hex');
       var plaintext = new Buffer("Cooking MC\'s like a pound of bacon");
-      var decrypted = encryption.singleCharXOR.decrypt(bufCt);
+      var decrypted = encryption.singleCharXOR.decryptNoKey(bufCt);
 
       expect(decrypted).to.eql(plaintext);
     });
   });
 
   describe('Challenge 4 - detect single char XOR (SKIP FOR SPEED)', function() {
-    it.skip('should detect single char XOR from a set of sample strings', function() {
+    it('should detect single char XOR from a set of sample strings', function() {
       var data = 
         fs
           .readFileSync('resources/4.txt')
@@ -91,11 +91,41 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 6 - break repeat key XOR', function() {
-    it.skip('should calculate the hamming distance between two strings', function() {
-      var s1 = 'this is a test';
-      var s2 = 'wokka wokka!!!';
+    it('should calculate the hamming distance between two strings', function() {
+      var buf1 = new Buffer('this is a test');
+      var buf2 = new Buffer('wokka wokka!!!');
 
-      expect(analyzers.hamming.distance(s1,s2)).to.eql(37);
+      expect(analyzers.hamming.distance(buf1, buf2)).to.eql(37);
+    });
+
+    it('should calculate the mode of an array', function() {
+      var arr1 = [1, 2, 1, 1, 1, 2, 3, 5];
+      var arr2 = [];
+
+      expect(utils.mode(arr1)).to.eql(1);
+      expect(utils.mode(arr2)).to.be(null);
+    });
+
+    it('should transpose an array of arrays', function() {
+      var matrix = [[1, 2, 3], [4, 5, 6]]
+
+      expect(utils.transpose(matrix)).to.eql([[1, 4], [2, 5], [3, 6]]);
+    });
+
+    it('should decrypt repeat key XOR without a key', function() {
+      var data      = new Buffer(fs.readFileSync('resources/6.txt', 'ascii'), 'base64');
+      var plaintext = 
+        encryption
+          .repeatKeyXOR
+          .decryptNoKey(data)
+          .toString()
+          .slice(0, 150);
+
+      expect(plaintext).to.eql(
+        "I\'m back and I\'m ringin\' the bell \nA rockin\' on the mike while" +
+        " the fly girls yell \nIn ecstasy in the back of me \nWell that\'s my" +
+        " DJ Deshay cuttin\' all "
+      );
     });
   });
 
