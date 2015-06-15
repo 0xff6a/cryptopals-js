@@ -55,7 +55,9 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 4 - detect single char XOR (SKIP FOR SPEED)', function() {
-    it('should detect single char XOR from a set of sample strings', function() {
+    this.timeout(3000);
+
+    it.skip('should detect single char XOR from a set of sample strings', function() {
       var data = 
         fs
           .readFileSync('resources/4.txt')
@@ -107,7 +109,7 @@ describe('Set 1', function() {
     });
 
     it('should transpose an array of arrays', function() {
-      var matrix = [[1, 2, 3], [4, 5, 6]]
+      var matrix = [[1, 2, 3], [4, 5, 6]];
 
       expect(utils.transpose(matrix)).to.eql([[1, 4], [2, 5], [3, 6]]);
     });

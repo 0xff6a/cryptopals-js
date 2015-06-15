@@ -1,5 +1,6 @@
-var _   = require('underscore');
-var xor = require('./utils/xor.js');
+var _     = require('underscore');
+var xor   = require('./utils/xor.js');
+var pkcs7 = require('./utils/pkcs7.js');
 //
 // Buffer, Number -> Array(Buffer)
 //
@@ -28,9 +29,8 @@ function mode(numArr) {
   var maxEl    = numArr[0];
 
   for(var i = 0; i < numArr.length; i++) {
-    var el = numArr[i];
-
-    modeMap[el] == null ? modeMap[el] = 1 : modeMap[el]++;
+    var el      = numArr[i];
+    modeMap[el] = (modeMap[el] || 0) + 1; 
 
     if (modeMap[el] > maxCount)
     {
@@ -38,7 +38,7 @@ function mode(numArr) {
         maxCount = modeMap[el];
     }
   }
-  
+
   return maxEl;
 }
 //
@@ -48,7 +48,11 @@ function transpose(matrix) {
   return _.zip.apply(_, matrix);
 }
 
-exports.xor       = xor;
+// Modules
+exports.xor   = xor;
+exports.pkcs7 = pkcs7;
+
+// Functions
 exports.blocks    = blocks;
 exports.mode      = mode;
 exports.transpose = transpose;

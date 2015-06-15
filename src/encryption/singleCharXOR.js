@@ -26,7 +26,7 @@ function detect(bufCts) {
 
 function decryptInfo(bufCt) {
   var len = bufCt.length;
-  var res = new Result();
+  var res = { score: Infinity };
   var bufTemp;
   var bufKey;
   var score;
@@ -46,19 +46,12 @@ function decryptInfo(bufCt) {
   return res;
 }
 
-exports.decryptInfo  = decryptInfo
+exports.decryptInfo  = decryptInfo;
 exports.decryptNoKey = decryptNoKey;
 exports.detect       = detect;
 
 // ================================================================================================
 // ================================================================================================
-
-
-function Result() {
-  this.key       = '';
-  this.plaintext = '';
-  this.score     = Infinity;
-}
 
 function buildKey(charCode, len) {
   var bufKey = new Buffer(len);

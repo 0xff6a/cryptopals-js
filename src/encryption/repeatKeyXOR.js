@@ -89,14 +89,9 @@ function guessKeySize(bufSample) {
 
     return result;
 
-  }, (new KeySizeGuess()) );
+  }, { score: Infinity });
 
   return keySize;
-}
-
-function KeySizeGuess() {
-  this.value = '';
-  this.score = Infinity;
 }
 
 function allKeySizes() {
