@@ -5,6 +5,7 @@ var encryption = require('../src/encryption.js');
 var analyzers  = require('../src/analyzers.js');
 var oracles    = require('../src/oracles.js');
 
+// newline character doesnt play well with built in decoder for b64
 function bufferB64File(filepath) {
   return (new Buffer(fs.readFileSync(filepath, 'ascii'), 'base64'));
 }
@@ -134,22 +135,28 @@ describe('Set 1', function() {
   });
 
   describe('Challenge 7 - AES in ECB mode', function() {
-    it('should decrypt an AES-ECB encrypted ciphertext given the key', function() {
-      var key    = new Buffer('YELLOW SUBMARINE');
+    var key    = new Buffer('YELLOW SUBMARINE');
+    var data   = bufferB64File('resources/7.txt');
+    var result = encryption.aesECB.decrypt(data, key);
 
-      // newline character doesnt play well with built in decoder for b64
-      var data   = bufferB64File('resources/7.txt');
-      var result = 
-        encryption
-          .aesECB.decrypt(data, key)
+    it('should decrypt an AES-ECB encrypted ciphertext given the key', function() {      
+      var plaintext = 
+        result
           .toString('ascii')
           .slice(0, 150);
       
-      expect(result).to.eql(
+      expect(plaintext).to.eql(
         "I\'m back and I\'m ringin\' the bell \nA rockin\' on the mike while" +
         " the fly girls yell \nIn ecstasy in the back of me \nWell that\'s my" +
         " DJ Deshay cuttin\' all "
       );
+    });
+
+    it('should encrypt a plaintext under AES-ECB', function() {
+      var ciphertext = encryption.aesECB.encrypt(result, key);
+      var plaintext  = encryption.aesECB.decrypt(ciphertext, key);
+
+      expect(plaintext).to.eql(result);
     });
   });
 

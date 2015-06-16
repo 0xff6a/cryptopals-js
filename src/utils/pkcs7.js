@@ -5,9 +5,13 @@ var utils = require('../utils.js');
 // Buffer, Number -> Buffer
 //
 function pad(buf, blockSize) {
+  if (buf.length % blockSize === 0) {
+    return buf;
+  }
+
   var blocks       = utils.blocks(buf, blockSize);
   var paddingBlock = blocks.pop();
-  var padLen       = blockSize - buf.length;
+  var padLen       = blockSize - paddingBlock.length;
   var bufPad       = new Buffer(padLen);
 
   bufPad.fill(String.fromCharCode(padLen));
