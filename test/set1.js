@@ -5,6 +5,10 @@ var encryption = require('../src/encryption.js');
 var analyzers  = require('../src/analyzers.js');
 var oracles    = require('../src/oracles.js');
 
+function bufferB64File(filepath) {
+  return (new Buffer(fs.readFileSync(filepath, 'ascii'), 'base64'));
+}
+
 describe('Set 1', function() {
   describe('Challenge 1 - Hex to Base64', function() {
     it('should convert hex to base64', function() {
@@ -113,7 +117,7 @@ describe('Set 1', function() {
     });
 
     it('should decrypt repeat key XOR without a key', function() {
-      var data      = new Buffer(fs.readFileSync('resources/6.txt', 'ascii'), 'base64');
+      var data      = bufferB64File('resources/6.txt');
       var plaintext = 
         encryption
           .repeatKeyXOR
@@ -134,11 +138,10 @@ describe('Set 1', function() {
       var key    = new Buffer('YELLOW SUBMARINE');
 
       // newline character doesnt play well with built in decoder for b64
-      var data   = new Buffer(fs.readFileSync('resources/7.txt', 'ascii'), 'base64');
+      var data   = bufferB64File('resources/7.txt');
       var result = 
         encryption
-          .aesECB
-          .decrypt(data, key)
+          .aesECB.decrypt(data, key)
           .toString('ascii')
           .slice(0, 150);
       
