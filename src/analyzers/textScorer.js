@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 var BENCHMARK = 
 {
   97:  0.065336,
@@ -33,15 +35,8 @@ var BENCHMARK =
 //
 // Buffer, Number -> Object
 //
-function frequency(buf, unit) {
-  var result = {};
-  
-  for(var i = 0; i < buf.length; i++) {
-    var charCode     = buf[i];
-    result[charCode] = (result[charCode] || 0) + unit;
-  }
-
-  return result;
+function absoluteFreq(buf) {
+  return frequency(buf, 1.0);
 }
 //
 // Calculate frequency difference from benchmark
@@ -58,9 +53,48 @@ function calculate(buf) {
 
   return Math.sqrt(sumSq);
 }
+//
+// Simplified text scorer based on whether or not it is a common ASCII character
+//
+// Buffer -> Number
+//
+function simple(buf) {
+  var score = 0;
 
-exports.calculate    = calculate;
+  for (var i = 0; i < buf.length; i++) {
+    score += charScore(buf[i]);
+  }
+
+  return score;
+}
+//
+// Number -> Number
+//
+function charScore(charCode) {
+  var expectedRange = _.range(32, 123);
+  var excludedRange = 
+    _.range(0, 10)
+    .concat(
+      _.range(11, 32),
+      [127],
+      _.range(129, 153)
+    )
+
+  if (expectedRange.indexOf(charCode) !== -1) {
+    return 1;
+  }
+    
+  if (excludedRange.indexOf(charCode) !== -1) {
+    return -99;
+  }
+
+  return 0;
+}
+
 exports.absoluteFreq = absoluteFreq;
+exports.calculate    = calculate;
+exports.simple       = simple;
+exports.charScore    = charScore;
 
 // ================================================================================================
 // ================================================================================================
@@ -69,6 +103,15 @@ function relativeFreq(buf) {
   return frequency(buf, 1.0 / buf.length);
 }
 
-function absoluteFreq(buf) {
-  return frequency(buf, 1.0);
+function frequency(buf, unit) {
+  var result = {};
+  
+  for(var i = 0; i < buf.length; i++) {
+    var charCode     = buf[i];
+    result[charCode] = (result[charCode] || 0) + unit;
+  }
+
+  return result;
 }
+
+

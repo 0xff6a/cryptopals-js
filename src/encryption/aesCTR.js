@@ -45,9 +45,22 @@ function incrementCtr(bufCtr) {
 
   return bufCtr;
 }
+//
+// Decrypts an array of ciphertexts encrypted under the same key and nonce
+//
+// Array(Buffer) -> Array(Buffer)
+//
+function decryptNoKey(arrCts) {
+  //for each character in the keystream
+  // guess each char 0-255
+  //score the resultant plainetxt chars
+  // pick keystream char with highest score
+  // repeat for each char in key stream
+}
 
 exports.decrypt            = decrypt;
 exports.encrypt            = encrypt;
+exports.decryptNoKey       = decryptNoKey;
 exports.littleEndIncrement = incrementCtr;
 
 // ================================================================================================

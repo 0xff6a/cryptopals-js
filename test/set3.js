@@ -1,9 +1,7 @@
 var fs         = require('fs');
+var crypto     = require('crypto');
 var expect     = require('expect.js');
-var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
-var analyzers  = require('../src/analyzers.js');
-var oracles    = require('../src/oracles.js');
 
 describe('Set 3', function() {
   describe('Challenge 18  - Implement AES in CTR mode', function() {
@@ -36,6 +34,21 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 19 - break fixed nonce CTR', function() {
+    it('should decrypt a set of ciphertexts encrypted under a fixed nonce', function() {
+      var bufKey   = crypto.randomBytes(16);
+      var bufNonce = new Buffer(8).fill('\x00');
+      var data     = 
+        fs.readFileSync('resources/19.txt')
+          .toString()
+          .split('\n')
+          .map(function(ct) {
+            return (new Buffer(ct, 'base64'));
+          })
+          .map(function(bufCt) {
+            return encryption.aesCTR.encrypt(plaintext, bufKey, bufNonce);
+          });
 
+        console.log()
+    });
   });
 });
