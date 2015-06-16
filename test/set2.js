@@ -24,7 +24,7 @@ describe('Set 2', function() {
     var data   = new Buffer(fs.readFileSync('resources/10.txt', 'ascii'), 'base64');
     var bufKey = new Buffer('YELLOW SUBMARINE');
     var bufIv  = new Buffer(16).fill('\x00');
-    var bufPt  = encryption.aesCBC.decrypt(data, bufKey, bufIv)
+    var bufPt  = encryption.aesCBC.decrypt(data, bufKey, bufIv);
 
     it('should decrypt a ciphertext given key and IV', function() {
       var plaintext = bufPt.toString('ascii').slice(0, 150);
