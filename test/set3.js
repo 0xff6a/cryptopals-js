@@ -1,6 +1,7 @@
 var fs         = require('fs');
 var crypto     = require('crypto');
 var expect     = require('expect.js');
+var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
 
 describe('Set 3', function() {
@@ -34,21 +35,34 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 19 - break fixed nonce CTR', function() {
-    it('should decrypt a set of ciphertexts encrypted under a fixed nonce', function() {
-      var bufKey   = crypto.randomBytes(16);
-      var bufNonce = new Buffer(8).fill('\x00');
-      var data     = 
+    var bufKey   = new Buffer('0f3bc4ed8e87a792a47d16657538d267', 'hex');
+    var bufNonce = new Buffer(8).fill('\x00');
+
+    function encrypt(pt) {
+      var bufPt = new Buffer(pt, 'base64');
+
+      return encryption.aesCTR.encrypt(bufPt, bufKey, bufNonce);
+    }
+
+    function decrypt(ct, keyStream) {
+      return utils.xor.bytes(ct, keyStream.slice(0, ct.length));
+    }
+
+    it('should decrypt a set of ciphertexts encrypted under a fixed nonce', function() { 
+      var data = 
         fs.readFileSync('resources/19.txt')
           .toString()
           .split('\n')
-          .map(function(ct) {
-            return (new Buffer(ct, 'base64'));
-          })
-          .map(function(bufCt) {
-            return encryption.aesCTR.encrypt(plaintext, bufKey, bufNonce);
-          });
+          .map(encrypt);
 
-        console.log()
+      var keyGuess = encryption.aesCTR.guessKeyStream(data);
+      var pts = 
+        data.map(function(bufCt) {
+          return decrypt(bufCt, keyGuess).toString();
+        });
+
+      // Not 100% decrypted but that comes in the next challenge
+      expect(pts[3]).to.eql('eighteenth-cenvury houses.');
     });
   });
 });

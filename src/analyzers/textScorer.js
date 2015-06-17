@@ -71,24 +71,18 @@ function simple(buf) {
 // Number -> Number
 //
 function charScore(charCode) {
-  var expectedRange = _.range(32, 123);
-  var excludedRange = 
-    _.range(0, 10)
-    .concat(
-      _.range(11, 32),
-      [127],
-      _.range(129, 153)
-    )
+  var expected = expectedCharCodes();
+  var excluded = excludedCharCodes();
 
-  if (expectedRange.indexOf(charCode) !== -1) {
+  if (expected.indexOf(charCode) !== -1) {
     return 1;
   }
     
-  if (excludedRange.indexOf(charCode) !== -1) {
+  if (excluded.indexOf(charCode) !== -1) {
     return -99;
   }
 
-  return 0;
+  return -10;
 }
 
 exports.absoluteFreq = absoluteFreq;
@@ -112,6 +106,23 @@ function frequency(buf, unit) {
   }
 
   return result;
+}
+
+// UTF-8 encoding
+function expectedCharCodes() {
+  return [32, 44, 46]
+            .concat(
+                _.range(65, 91),
+                _.range(97, 123)
+              );
+}
+
+function excludedCharCodes() {
+  return [].concat(
+            _.range(0, 10),
+            _.range(11, 32),
+            _.range(123, 256)
+          );
 }
 
 

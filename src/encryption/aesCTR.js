@@ -1,5 +1,6 @@
-var aes   = require('./aesECB.js');
-var utils = require('../utils.js');
+var aes       = require('./aesECB.js');
+var utils     = require('../utils.js');
+var analyzers = require('../analyzers.js');
 
 // NOTE nonce and ctr are in little-endian format
 
@@ -46,23 +47,84 @@ function incrementCtr(bufCtr) {
   return bufCtr;
 }
 //
-// Decrypts an array of ciphertexts encrypted under the same key and nonce
+// Retrieves the keystream from an array ciphertexts encrypted under the same key and nonce
 //
-// Array(Buffer) -> Array(Buffer)
+// Array(Buffer) -> Buffer
 //
-function decryptNoKey(arrCts) {
-  //for each character in the keystream
-  // guess each char 0-255
-  //score the resultant plainetxt chars
-  // pick keystream char with highest score
-  // repeat for each char in key stream
+function guessKeyStream(arrCts) {
+  var keyLen    = keyStreamLength(arrCts);
+  var keyStream = new Buffer(keyLen);
+
+  // For each character in the keystream
+  for (var keyIndex = 0; keyIndex < keyLen; keyIndex++){
+    var score    = 0;
+    var maxScore = 0;
+
+    // guess each char 0-255
+    for (var c = 0; c < 255; c++) {
+
+      //score the resultant plaintext chars
+      score = scoreCharGuessgit (c, keyIndex, arrCts);
+
+      // pick keystream char with highest score
+      if (score > maxScore) {
+        keyStream[keyIndex] = c;
+      }
+    }
+  }
+  
+  return keyStream;
 }
 
 exports.decrypt            = decrypt;
 exports.encrypt            = encrypt;
-exports.decryptNoKey       = decryptNoKey;
+exports.guessKeyStream     = guessKeyStream;
 exports.littleEndIncrement = incrementCtr;
 
 // ================================================================================================
 // ================================================================================================
 
+function keyStreamLength(arrCts) {
+  var maxLen = 0;
+
+  arrCts.forEach(function(bufCt) {
+    var len = bufCt.length;
+
+    if (len > maxLen) {
+      maxLen =len;
+    }
+  });
+
+  return maxLen;
+}
+
+
+function scoreCharGuess(c, keyIndex, arrCts) {
+  var score = 0;
+  var charPt;
+  
+  arrCts.forEach(function(bufCt) {
+    if (bufCt[keyIndex]){
+      charPt = bufCt[keyIndex] ^ c;
+      score += analyzers.textScorer.charScore(charPt);
+    }
+  });
+
+  return score;
+}
+
+// function scoreCharGuess2(c, keyIndex, arrCts) {
+//   var score = 0;
+//   var bufPt;
+
+//   bufPt = 
+//     new Buffer(
+//       arrCts
+//         .map(function(bufCt) {
+//           return bufCt
+//         })
+//     );
+
+
+//   return score;
+// }
