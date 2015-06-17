@@ -4,7 +4,7 @@ var analyzers  = require('../analyzers.js');
 var encryption = require('../encryption');
 
 var KEY_SIZE_MIN = 6;
-var KEY_SIZE_MAX = 40;
+var KEY_SIZE_MAX = 60;
 //
 // Encrypts a plaintext using repeat XOR given a key
 //
@@ -34,20 +34,16 @@ function decrypt(bufCt, bufKey) {
 // Buffer -> Buffer
 //
 function decryptNoKey(bufCt) {
-  var bufKey = guessKey(bufCt);
+  var bufKey = guessKey(bufCt, advancedGuessKeySize(bufCt));
 
   return decrypt(bufCt, bufKey);
 }
-
-exports.encrypt      = encrypt;
-exports.decrypt      = decrypt;
-exports.decryptNoKey = decryptNoKey;
-
-// ================================================================================================
-// ================================================================================================
-
-function guessKey(bufCt) {
-  var keySize  = advancedGuessKeySize(bufCt);
+//
+// Guess the key given a size input
+//
+// Buffer, Number -> Buffer
+//
+function guessKey(bufCt, keySize) {
   var blocks   = utils.blocks(bufCt, keySize);
   var keyChars;
 
@@ -60,6 +56,14 @@ function guessKey(bufCt) {
 
   return Buffer.concat(keyChars);
 }
+
+exports.encrypt      = encrypt;
+exports.decrypt      = decrypt;
+exports.decryptNoKey = decryptNoKey;
+exports.guessKey     = guessKey;
+
+// ================================================================================================
+// ================================================================================================
 
 function advancedGuessKeySize(bufCt) {
   var blocks = utils.blocks(bufCt, KEY_SIZE_MAX * 2);

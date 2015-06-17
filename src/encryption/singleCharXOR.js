@@ -36,9 +36,9 @@ function decryptInfo(bufCt) {
     bufTemp = utils.xor.bytes(bufCt, bufKey);
     score   = analyzers.textScorer.calculate(bufTemp);
 
-    if (score < res.score) {
+    if (score < res.score && isPrintable(bufTemp)) {
       res.score     = score;
-      res.key       = new Buffer(String.fromCharCode(k));
+      res.key       = new Buffer([k]);
       res.plaintext = bufTemp;
     }
   }
@@ -59,4 +59,16 @@ function buildKey(charCode, len) {
   bufKey.fill(String.fromCharCode(charCode));
 
   return bufKey;
+}
+
+function isPrintable(buf) {
+  var badChars = analyzers.textScorer.excludedCharCodes();
+
+  for (var i = 0; i < buf.length; i++) {
+    if (badChars.indexOf(buf[i]) !== -1) {
+      return  false;
+    }
+  }
+  
+  return true;
 }

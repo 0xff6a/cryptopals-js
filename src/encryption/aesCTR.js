@@ -1,6 +1,7 @@
-var aes       = require('./aesECB.js');
-var utils     = require('../utils.js');
-var analyzers = require('../analyzers.js');
+var aes        = require('./aesECB.js');
+var utils      = require('../utils.js');
+var analyzers  = require('../analyzers.js');
+var encryption = require('../encryption.js');
 
 // NOTE nonce and ctr are in little-endian format
 
@@ -52,21 +53,16 @@ function incrementCtr(bufCtr) {
 // Array(Buffer) -> Buffer
 //
 function guessKeyStream(arrCts) {
-  var keyLen    = keyStreamLength(arrCts);
-  var keyStream = new Buffer(keyLen);
+  var keySize   = maxStreamLength(arrCts);
+  var keyStream = new Buffer(keySize);
 
-  // For each character in the keystream
-  for (var keyIndex = 0; keyIndex < keyLen; keyIndex++){
+  for (var keyIndex = 0; keyIndex < keySize; keyIndex++) {
     var score    = 0;
     var maxScore = 0;
 
-    // guess each char 0-255
     for (var c = 0; c < 255; c++) {
+      score = scoreCharGuess(c, keyIndex, arrCts);
 
-      //score the resultant plaintext chars
-      score = scoreCharGuessgit (c, keyIndex, arrCts);
-
-      // pick keystream char with highest score
       if (score > maxScore) {
         keyStream[keyIndex] = c;
       }
@@ -75,29 +71,61 @@ function guessKeyStream(arrCts) {
   
   return keyStream;
 }
+//
+// Decrypts a series of CTR encoded ciphertexts (under the same nonce)
+// by modelling as a single repeat key XOR encrypted ciphertext
+//
+// Array(Buffer) -> Buffer
+//
+function statisticalDecrypt(arrCts) {
+  var keySize   = minStreamLength(arrCts);
+  var truncatedCts;
+
+  truncatedCts = arrCts.map(function(bufCt) {
+    return bufCt.slice(0, keySize);
+  });
+
+  bufCt = Buffer.concat(truncatedCts);
+
+  return encryption.repeatKeyXOR.decryptNoKey(bufCt);
+}
 
 exports.decrypt            = decrypt;
 exports.encrypt            = encrypt;
 exports.guessKeyStream     = guessKeyStream;
+exports.statisticalDecrypt = statisticalDecrypt;
 exports.littleEndIncrement = incrementCtr;
 
 // ================================================================================================
 // ================================================================================================
 
-function keyStreamLength(arrCts) {
+function maxStreamLength(arrCts) {
   var maxLen = 0;
 
   arrCts.forEach(function(bufCt) {
     var len = bufCt.length;
 
     if (len > maxLen) {
-      maxLen =len;
+      maxLen = len;
     }
   });
 
   return maxLen;
 }
 
+function minStreamLength(arrCts) {
+  var minLen = Infinity;
+
+  arrCts.forEach(function(bufCt) {
+    var len = bufCt.length;
+
+    if (len < minLen) {
+      minLen = len;
+    }
+  });
+
+  return minLen;
+}
 
 function scoreCharGuess(c, keyIndex, arrCts) {
   var score = 0;
@@ -113,18 +141,3 @@ function scoreCharGuess(c, keyIndex, arrCts) {
   return score;
 }
 
-// function scoreCharGuess2(c, keyIndex, arrCts) {
-//   var score = 0;
-//   var bufPt;
-
-//   bufPt = 
-//     new Buffer(
-//       arrCts
-//         .map(function(bufCt) {
-//           return bufCt
-//         })
-//     );
-
-
-//   return score;
-// }

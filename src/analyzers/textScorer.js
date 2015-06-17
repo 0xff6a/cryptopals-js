@@ -28,7 +28,9 @@ var BENCHMARK =
   120: 0.00120000,
   121: 0.015792,
   122: 0.0005920,
-  32:  0.2
+  32:  0.17,
+  46:  0.02,
+  44:  0.01
 };
 // 
 // Calculate frequency each byte appears in a given string
@@ -47,8 +49,8 @@ function calculate(buf) {
   var freq = relativeFreq(buf);
   var sumSq;
 
-  sumSq = Object.keys(BENCHMARK).reduce( function(accum, char) {
-      return accum + Math.pow((BENCHMARK[char] - (freq[char] || 0)), 2);
+  sumSq = Object.keys(freq).reduce( function(accum, char) {
+      return accum + Math.pow((freq[char] - (BENCHMARK[char] || 0)), 2);
   }, 0);
 
   return Math.sqrt(sumSq);
@@ -85,10 +87,11 @@ function charScore(charCode) {
   return -10;
 }
 
-exports.absoluteFreq = absoluteFreq;
-exports.calculate    = calculate;
-exports.simple       = simple;
-exports.charScore    = charScore;
+exports.absoluteFreq      = absoluteFreq;
+exports.calculate         = calculate;
+exports.simple            = simple;
+exports.charScore         = charScore;
+exports.excludedCharCodes = excludedCharCodes;
 
 // ================================================================================================
 // ================================================================================================
@@ -121,7 +124,7 @@ function excludedCharCodes() {
   return [].concat(
             _.range(0, 10),
             _.range(11, 32),
-            _.range(123, 256)
+            _.range(127, 256)
           );
 }
 

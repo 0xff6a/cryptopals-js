@@ -62,7 +62,34 @@ describe('Set 3', function() {
         });
 
       // Not 100% decrypted but that comes in the next challenge
-      expect(pts[3]).to.eql('eighteenth-cenvury houses.');
+      expect(pts[1]).to.eql('roming.with vitid faces');
+    });
+  });
+
+  describe('Challenge 20 - break fixed nonce CTR statistically', function() {
+    var bufKey   = new Buffer('7654b5c851a4c9dc869d96d684424ff4', 'hex');
+    var bufNonce = new Buffer(8).fill('\x00');
+
+    function encrypt(pt) {
+      var bufPt = new Buffer(pt, 'base64');
+
+      return encryption.aesCTR.encrypt(bufPt, bufKey, bufNonce);
+    }
+
+    it('should decrypt fixed nonce CTR by modelling as repeat XOR', function() {
+      var data = 
+        fs.readFileSync('resources/20.txt')
+          .toString()
+          .split('\n')
+          .map(encrypt);
+
+      var plaintext = encryption.aesCTR.statisticalDecrypt(data).toString();
+      
+      expect(plaintext.slice(0, 150)).to.eql(
+        ':\'m rated "R"...this is a warning, ya better void / ' +
+        'P0uz I came back to attack others in spite- /' +
+        ' Strike l1ut don\'t be afraid in the dark, in a park /'
+      );
     });
   });
 });

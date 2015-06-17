@@ -43,8 +43,8 @@ describe('Set 1', function() {
 
     it('should score strings based on character frequency vs average', function() {
       var english = analyzers.textScorer.calculate('hello my name is jeremy');
-      var bad     = analyzers.textScorer.calculate('hello sjkbv');
-      var worse   = analyzers.textScorer.calculate('sml£&0m,c');
+      var bad     = analyzers.textScorer.calculate('hello sjkb');
+      var worse   = analyzers.textScorer.calculate('sml£&0m,c$$$.....');
 
       expect([bad, english, worse].sort()).to.eql([english, bad, worse]);
     });
@@ -121,8 +121,7 @@ describe('Set 1', function() {
       var data      = bufferB64File('resources/6.txt');
       var plaintext = 
         encryption
-          .repeatKeyXOR
-          .decryptNoKey(data)
+          .repeatKeyXOR.decryptNoKey(data)
           .toString()
           .slice(0, 150);
 
