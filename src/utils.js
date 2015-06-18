@@ -1,6 +1,7 @@
 var _     = require('underscore');
 var xor   = require('./utils/xor.js');
 var pkcs7 = require('./utils/pkcs7.js');
+var prg   = require('./utils/MersenneTwister.js');
 //
 // Buffer, Number -> Array(Buffer)
 //
@@ -51,6 +52,7 @@ function transpose(matrix) {
 // Modules
 exports.xor   = xor;
 exports.pkcs7 = pkcs7;
+exports.prg   = prg;
 
 // Functions
 exports.blocks    = blocks;
