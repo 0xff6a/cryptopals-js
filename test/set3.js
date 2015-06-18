@@ -3,6 +3,7 @@ var crypto     = require('crypto');
 var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
+var helpers    = require('./helpers.js');
 
 describe('Set 3', function() {
   describe('Challenge 18  - Implement AES in CTR mode', function() {
@@ -33,33 +34,14 @@ describe('Set 3', function() {
       expect(encryption.aesCTR.encrypt(plaintext, bufKey, bufNonce)).to.eql(bufCt);
     });
   });
-
+  
   describe('Challenge 19 - break fixed nonce CTR', function() {
-    var bufKey   = new Buffer('0f3bc4ed8e87a792a47d16657538d267', 'hex');
-    var bufNonce = new Buffer(8).fill('\x00');
-
-    function encrypt(pt) {
-      var bufPt = new Buffer(pt, 'base64');
-
-      return encryption.aesCTR.encrypt(bufPt, bufKey, bufNonce);
-    }
-
-    function decrypt(ct, keyStream) {
-      return utils.xor.bytes(ct, keyStream.slice(0, ct.length));
-    }
-
     it('should decrypt a set of ciphertexts encrypted under a fixed nonce', function() { 
-      var data = 
-        fs.readFileSync('resources/19.txt')
-          .toString()
-          .split('\n')
-          .map(encrypt);
+      var bufKey   = new Buffer('0f3bc4ed8e87a792a47d16657538d267', 'hex');
+      var data     = helpers.ctr.encryptFromB64File('resources/19.txt', bufKey);
 
       var keyGuess = encryption.aesCTR.guessKeyStream(data);
-      var pts = 
-        data.map(function(bufCt) {
-          return decrypt(bufCt, keyGuess).toString();
-        });
+      var pts      = helpers.ctr.decryptCtArray(data, keyGuess);
 
       // Not 100% decrypted but that comes in the next challenge
       expect(pts[1]).to.eql('roming.with vitid faces');
@@ -67,21 +49,9 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 20 - break fixed nonce CTR statistically', function() {
-    var bufKey   = new Buffer('7654b5c851a4c9dc869d96d684424ff4', 'hex');
-    var bufNonce = new Buffer(8).fill('\x00');
-
-    function encrypt(pt) {
-      var bufPt = new Buffer(pt, 'base64');
-
-      return encryption.aesCTR.encrypt(bufPt, bufKey, bufNonce);
-    }
-
     it('should decrypt fixed nonce CTR by modelling as repeat XOR', function() {
-      var data = 
-        fs.readFileSync('resources/20.txt')
-          .toString()
-          .split('\n')
-          .map(encrypt);
+      var bufKey = new Buffer('7654b5c851a4c9dc869d96d684424ff4', 'hex');
+      var data   = helpers.ctr.encryptFromB64File('resources/20.txt', bufKey);
 
       var plaintext = encryption.aesCTR.statisticalDecrypt(data).toString();
       

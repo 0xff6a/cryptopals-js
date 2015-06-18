@@ -35,6 +35,7 @@ function decrypt(bufCt, bufKey, bufNonce) {
 function encrypt(bufPt, bufKey, bufNonce) {
   return decrypt(bufPt, bufKey, bufNonce);
 }
+//
 // Buffer -> Buffer
 //
 function incrementCtr(bufCtr) {
@@ -78,16 +79,14 @@ function guessKeyStream(arrCts) {
 // Array(Buffer) -> Buffer
 //
 function statisticalDecrypt(arrCts) {
-  var keySize   = minStreamLength(arrCts);
+  var keySize = minStreamLength(arrCts);
   var truncatedCts;
 
   truncatedCts = arrCts.map(function(bufCt) {
     return bufCt.slice(0, keySize);
   });
 
-  bufCt = Buffer.concat(truncatedCts);
-
-  return encryption.repeatKeyXOR.decryptNoKey(bufCt);
+  return encryption.repeatKeyXOR.decryptNoKey(Buffer.concat(truncatedCts));
 }
 
 exports.decrypt            = decrypt;
