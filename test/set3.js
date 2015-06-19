@@ -167,11 +167,14 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 24 - create the MT19937 stream cipher and break it', function() {
+    // Last test can be slow
+    this.timeout(5000);
+
     var bufKey   = crypto.randomBytes(2);
     var bufKnown = (new Buffer(14).fill('A'));
     var bufPt    = 
       Buffer.concat([
-        crypto.randomBytes(helpers.randomInt(0, 64)),
+        crypto.randomBytes(helpers.randomInt(8, 1028)),
         bufKnown
       ]);
 
@@ -186,6 +189,19 @@ describe('Set 3', function() {
 
     it('should reveal the ciphertext given a known plaintext segment', function() {
       expect(encryption.mt19937.decryptNoKey(bufCt, bufKnown)).to.eql(bufPt);
+    });
+
+    it('should detect an MT19937 generated token vs other random bytes', function() {
+      var mtToken = encryption.mt19937.token();
+      var tokens  = [
+        mtToken,
+        crypto.randomBytes(84),
+        crypto.randomBytes(84)
+      ];
+
+      expect(tokens.map(encryption.mt19937.detectToken)).to.eql([
+        true, false, false
+      ]);
     });
   });
 });
