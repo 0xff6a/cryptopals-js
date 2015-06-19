@@ -76,7 +76,7 @@ MersenneTwister.prototype.generateNumbers = function() {
 
 exports.MersenneTwister = MersenneTwister;
 exports.unShiftRightXor = unShiftRightXor;
-exports.unShiftLeftXor = unShiftLeftXor;
+exports.unShiftLeftXor  = unShiftLeftXor;
 
 // ================================================================================================
 // ================================================================================================

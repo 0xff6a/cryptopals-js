@@ -132,7 +132,7 @@ describe('Set 3', function() {
       expect(utils.prg.unShiftRightXor(x, 18)).to.eql(y);
     });
 
-    it('should be able t reverse a left shift and XOR operation', function() {
+    it('should be able to reverse a left shift and XOR operation', function() {
       var y = Math.floor(Math.random() * (Math.pow(2, 10) - 1));
       var x = y ^ (y << 15) & 0xefc60000;
 
@@ -148,7 +148,7 @@ describe('Set 3', function() {
     });
 
     it('should clone a generator from 624 outputs and predict the 625th output', function() {
-      var seed   = Math.floor(Math.random() * (Math.pow(2, 32) - 1));
+      var seed   = Math.ceil(Math.random() * (Math.pow(2, 32) - 1));
       var target = new utils.prg.MersenneTwister(seed);
       var clone  = new utils.prg.MersenneTwister(1);
       var myMT   = [];
@@ -163,6 +163,29 @@ describe('Set 3', function() {
 
       expect(clone.MT).to.eql(target.MT);
       expect(clone.extractNumber()).to.eql(target.extractNumber());
+    });
+  });
+
+  describe('Challenge 24 - create the MT19937 stream cipher and break it', function() {
+    var bufKey   = crypto.randomBytes(2);
+    var bufKnown = (new Buffer(14).fill('A'));
+    var bufPt    = 
+      Buffer.concat([
+        crypto.randomBytes(helpers.randomInt(0, 64)),
+        bufKnown
+      ]);
+
+    var bufCt = encryption.mt19937.encrypt(bufPt, bufKey);
+
+    it('should encrypt/decrypt a plaintext using a MT19937 keystream', function() {
+      var badKey = crypto.randomBytes(2);
+
+      expect(encryption.mt19937.decrypt(bufCt, bufKey)).to.eql(bufPt);
+      expect(encryption.mt19937.decrypt(bufCt, badKey)).not.to.eql(bufPt);
+    });
+
+    it('should reveal the ciphertext given a known plaintext segment', function() {
+      expect(encryption.mt19937.decryptNoKey(bufCt, bufKnown)).to.eql(bufPt);
     });
   });
 });

@@ -52,4 +52,9 @@ var ctr = (function() {
 // ================================================================================================
 // ================================================================================================
 
-exports.ctr = ctr;
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+exports.ctr       = ctr;
+exports.randomInt = randomInt;
