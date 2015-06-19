@@ -3,6 +3,7 @@ var crypto     = require('crypto');
 var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
+var oracles    = require('../src/oracles.js');
 var helpers    = require('./helpers.js');
 
 describe('Set 3', function() {
@@ -99,6 +100,27 @@ describe('Set 3', function() {
         1932357898, 1526046390, 2484164448, 4045158889, 1752934226, 1631242710, 1018023110, 3276716738,
         3879985479, 3313975271, 2463934640, 1294333494, 12327951,   3318889349, 2650617233, 656828586,
       ]);
+    });
+  });
+
+  describe('Challenge 22 - Crack an MT19937 seed', function() {
+    it('should discover the seed from the first 32bit output of the RNG', function() {
+      // Simulate the passage of time for the challenge
+      //  -> sleep for t seconds (40-1000)
+      //  -> seed RNG with current unix timestamp
+      //  -> get first 32-bit RNG output
+
+      var unixTime = new Date().getTime();
+      var minT     = 40;
+      var maxT     = 1000;
+      
+      var t        = Math.floor(Math.random() * (maxT - minT + 1) + minT);
+      var seed     = unixTime + t;
+      var mt       = new utils.prg.MersenneTwister(seed);
+      var mtOut    = mt.extractNumber();
+
+
+      expect(oracles.mt19937.crackSeed(mtOut, unixTime + minT, unixTime + maxT)).to.eql(seed);
     });
   });
 });

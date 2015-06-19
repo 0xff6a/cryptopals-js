@@ -1,5 +1,5 @@
 //
-// Implement the MT19937 (Mersenne Twister) Pseudo Random Generator
+// MT19937 (Mersenne Twister) Pseudo Random Generator
 //
 
 // Initialise the generator from the seed
