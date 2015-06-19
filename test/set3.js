@@ -167,7 +167,7 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 24 - create the MT19937 stream cipher and break it', function() {
-    // Last test can be slow
+    // Last 2 tests can be slow
     this.timeout(5000);
 
     var bufKey   = crypto.randomBytes(2);

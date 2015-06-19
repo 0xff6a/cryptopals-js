@@ -62,7 +62,7 @@ function token() {
 function detectToken(token) {
   var bufKnown = new Buffer('password reset token');
   
-  if (decryptTimestampKey(token, bufKnown, 20000)) {
+  if (decryptTimestampKey(token, bufKnown)) {
     return true;
   }
 
@@ -91,10 +91,12 @@ function encrypt(bufPt, seed) {
   return bufCt;
 }
 
-function decryptTimestampKey(bufCt, bufKnown, tWindow) {
-  var now  = new Date().getTime();
-  var minT = now - tWindow;
-  var maxT = now + tWindow;
+var T_WINDOW = 5000;
+
+function decryptTimestampKey(bufCt, bufKnown) {
+  var now     = new Date().getTime();
+  var minT    = now - T_WINDOW;
+  var maxT    = now + T_WINDOW;
   var bufTmp;
 
   for (var s = minT; s < maxT; s++) {
