@@ -139,12 +139,30 @@ describe('Set 3', function() {
       expect(utils.prg.unShiftLeftXor(x, 15, 0xefc60000)).to.eql(y);
     });
 
-    it('Can untemper a PRG output to retrieve the internal state variable', function() {
+    it('should untemper a PRG output to retrieve the internal state variable', function() {
       var mt  = new utils.prg.MersenneTwister(1);
       var y   = mt.extractNumber();
       var mti = mt.unTemper(y);
 
       expect(mt.MT.indexOf(mti)).not.to.eql(-1);
+    });
+
+    it('should clone a generator from 624 outputs and predict the 625th output', function() {
+      var seed   = Math.floor(Math.random() * (Math.pow(2, 32) - 1));
+      var target = new utils.prg.MersenneTwister(seed);
+      var clone  = new utils.prg.MersenneTwister(1);
+      var myMT   = [];
+
+      for (var i = 0; i < target.N; i++) {
+        var y = target.extractNumber();
+
+        myMT.push(clone.unTemper(y));
+      }
+
+      clone.MT = myMT;
+
+      expect(clone.MT).to.eql(target.MT);
+      expect(clone.extractNumber()).to.eql(target.extractNumber());
     });
   });
 });
