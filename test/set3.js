@@ -62,4 +62,12 @@ describe('Set 3', function() {
       );
     });
   });
+
+  describe('Challenge 21 - implement the MT19937 RNG', function() {
+    it('the RNG should produce the expected output', function() {
+      var mt = new utils.prg.MersenneTwister(12345678);
+
+      expect(mt.extractNumber()).to.eql(1);
+    });
+  });
 });
