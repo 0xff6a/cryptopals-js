@@ -13,7 +13,7 @@ function MersenneTwister(seed) {
   // Generator Parameters
   this.index = 0;
   this.MT    = new Array(this.N);
-  this.MT[0] = seed;
+  this.MT[0] = (seed >>> 0);
   
   // Initialise the generator from given seed
   for (var i = 1; i < this.N; i++) {
@@ -23,6 +23,7 @@ function MersenneTwister(seed) {
       (((((s & 0xffff0000) >>> 16) * 0x6c078965) << 16) + 
         (s & 0x0000ffff) * 0x6c078965) + i;
 
+    this.MT[i] >>>= 0;
   }
 }
 
@@ -45,7 +46,7 @@ MersenneTwister.prototype.extractNumber = function() {
 
   this.index = (this.index + 1) % this.N;
 
-  return y;
+  return y >>> 0;
 };
 
 // Generate an array of 624 untempered numbers
