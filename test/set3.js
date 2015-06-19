@@ -36,7 +36,7 @@ describe('Set 3', function() {
     });
   });
   
-  describe('Challenge 19 - break fixed nonce CTR', function() {
+  describe('Challenge 19 - Break fixed nonce CTR', function() {
     it('should decrypt a set of ciphertexts encrypted under a fixed nonce', function() { 
       var bufKey   = new Buffer('0f3bc4ed8e87a792a47d16657538d267', 'hex');
       var data     = helpers.ctr.encryptFromB64File('resources/19.txt', bufKey);
@@ -49,7 +49,7 @@ describe('Set 3', function() {
     });
   });
 
-  describe('Challenge 20 - break fixed nonce CTR statistically', function() {
+  describe('Challenge 20 - Break fixed nonce CTR statistically', function() {
     it('should decrypt fixed nonce CTR by modelling as repeat XOR', function() {
       var bufKey = new Buffer('7654b5c851a4c9dc869d96d684424ff4', 'hex');
       var data   = helpers.ctr.encryptFromB64File('resources/20.txt', bufKey);
@@ -64,7 +64,7 @@ describe('Set 3', function() {
     });
   });
 
-  describe('Challenge 21 - implement the MT19937 RNG', function() {
+  describe('Challenge 21 - Implement the MT19937 RNG', function() {
     it('the RNG should produce the expected output', function() {
       var mt     = new utils.prg.MersenneTwister(1);
       var output = [];
@@ -104,12 +104,12 @@ describe('Set 3', function() {
   });
 
   describe('Challenge 22 - Crack an MT19937 seed', function() {
-    it('should discover the seed from the first 32bit output of the RNG', function() {
+    it ('should discover the seed from the first 32bit output of the RNG', function() {
       // Simulate the passage of time for the challenge
       //  -> sleep for t seconds (40-1000)
       //  -> seed RNG with current unix timestamp
       //  -> get first 32-bit RNG output
-
+      //
       var unixTime = new Date().getTime();
       var minT     = 40;
       var maxT     = 1000;
@@ -121,6 +121,30 @@ describe('Set 3', function() {
 
 
       expect(oracles.mt19937.crackSeed(mtOut, unixTime + minT, unixTime + maxT)).to.eql(seed);
+    });
+  });
+
+  describe('Challenge 23 - Clone an MT19937 RNG from its output', function() {
+    it('should be able to reverse a right shift and XOR operation', function() {
+      var y = Math.floor(Math.random() * (Math.pow(2, 32) - 1));
+      var x = y ^ (y >>> 18);
+
+      expect(utils.prg.unShiftRightXor(x, 18)).to.eql(y);
+    });
+
+    it('should be able t reverse a left shift and XOR operation', function() {
+      var y = Math.floor(Math.random() * (Math.pow(2, 10) - 1));
+      var x = y ^ (y << 15) & 0xefc60000;
+
+      expect(utils.prg.unShiftLeftXor(x, 15, 0xefc60000)).to.eql(y);
+    });
+
+    it('Can untemper a PRG output to retrieve the internal state variable', function() {
+      var mt  = new utils.prg.MersenneTwister(1);
+      var y   = mt.extractNumber();
+      var mti = mt.unTemper(y);
+
+      expect(mt.MT.indexOf(mti)).not.to.eql(-1);
     });
   });
 });
