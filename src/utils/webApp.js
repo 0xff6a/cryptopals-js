@@ -49,11 +49,39 @@ function decryptProfile(bufCt, bufKey) {
 
   return kvParse(bufProfile.toString());
 }
+//
+// Creates an encrypted comment string
+//
+// String, Buffer -> Buffer
+//
+function encryptCommentString(sUserData, bufKey, bufIv) {
+  var bufPt;
 
-exports.kvParse             = kvParse;
-exports.profileFor          = profileFor;
-exports.encryptedProfileFor = encryptedProfileFor;
-exports.decryptProfile      = decryptProfile;
+  bufPt = new Buffer(
+            'comment1=cooking%20MCs;userdata=' + 
+            sanitize(sUserData) + 
+            ';comment2=%20like%20a%20pound%20of%20bacon',
+            'ascii'
+          );
+
+  return encryption.aesCBC.encrypt(bufPt, bufKey, bufIv);
+}
+
+function isAdminComment(bufCt, bufKey, bufIv) {
+  var bufPt = encryption.aesCBC.decrypt(bufCt, bufKey, bufIv);
+  var match = bufPt
+                .toString()
+                .match(/;admin=true;/);
+
+  return !!match;
+}
+
+exports.kvParse              = kvParse;
+exports.profileFor           = profileFor;
+exports.encryptedProfileFor  = encryptedProfileFor;
+exports.decryptProfile       = decryptProfile;
+exports.encryptCommentString = encryptCommentString;
+exports.isAdminComment       = isAdminComment;
 
 // ================================================================================================
 // ================================================================================================
@@ -66,3 +94,11 @@ Object.prototype.pushPair = function(kv, delim) {
 
   return this;
 };
+
+function sanitize(sUrl) {
+  return sUrl
+          .replace(/\\/g, "\\\\")
+          .replace(/;/g, "\\;")
+          .replace(/'/g, "\\'")
+          .replace(/"/g, "\\\"");
+}

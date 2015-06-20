@@ -141,7 +141,38 @@ describe('Set 2', function() {
   });
 
   describe('Challenge 16 - CBC bitflipping attacks', function() {
-    
+    var bufKey = crypto.randomBytes(16);
+    var bufIv  = crypto.randomBytes(16);
+
+    it('should not allow injection of an admin token through the comment string', function() {
+      var bufCt = utils.webApp.encryptCommentString('1;admin=true;', bufKey, bufIv);
+
+      expect(utils.webApp.isAdminComment(bufCt, bufKey, bufIv)).to.be(false);
+    });
+
+    it('should allow injection of admin token with CBC bitflipping', function() {
+      //
+      // Examine the known blocks:
+      // ["comment1=cooking", "%20MCs;userdata=",";comment2=%20lik","e%20a%20pound%20", "of%20bacon"]
+      //
+      // We can corrupt block[3] to read 'xxxx;admin=true;'
+      // Inject usedata with a block = ';comment2=%20lik' XOR 'xxxx;admin=true;'
+      //
+      var bufInject = new Buffer('xxxx;admin=true;');
+
+      // Ciphertext with empty user data
+      var bufCt = utils.webApp.encryptCommentString('', bufKey, bufIv);
+
+      // Now inject a block = 'xxxx;admin=true;' XOR AES(';comment2=%20lik')
+      var bufExploit = utils.xor.bytes(bufInject, bufCt.slice(32, 48));
+
+      // Now splice together
+      bufCt = utils.blocks(bufCt, 16);
+      bufCt.splice(2, 0, bufExploit);
+      bufCt = Buffer.concat(bufCt);
+
+      expect(utils.webApp.isAdminComment(bufCt, bufKey, bufIv)).to.be(true);
+    });
   });
 });
 
