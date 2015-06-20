@@ -47,6 +47,7 @@ function strip(buf, blockSize) {
   
   // Bad practice - deliberately implemented so we can attack it!
   if (!isValid(paddingBlock, blockSize)) {
+    console.log(paddingBlock.toString('ascii'));
     throw new Error('PKCS7 padding invalid');
   }
 

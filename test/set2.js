@@ -1,4 +1,5 @@
 var fs         = require('fs');
+var crypto     = require('crypto');
 var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
@@ -88,6 +89,40 @@ describe('Set 2', function() {
       var hack = 'foo@bar.com&role=admin';
 
       expect(utils.webApp.profileFor(hack)).to.eql('email=foo@bar.com&uid=10&role=user');
+    });
+
+    it('can create and encrypted profile and decrypt it', function() {
+      var bufKey   = crypto.randomBytes(16);
+      var bufCt    = utils.webApp.encryptedProfileFor(email, bufKey);
+      var result   = utils.webApp.decryptProfile(bufCt, bufKey);
+
+      expect(result).to.eql({
+        email: 'foo@bar.com',
+        role:  "user",
+        uid:   '10'
+      });
+    });
+
+    it('should create an admin profile', function() {
+      var s1 = "xxxx@xxxx.com";
+      // -> ["email=xxxx@xxxx.", "com&uid=10&role=", "user\f\f\f\f\f\f\f\f\f\f\f\f"]
+
+      var s2 = "xxxxxxxxxxadmin\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b@d.com";
+      // -> ["email=xxxxxxxxxx", "admin\v\v\v\v\v\v\v\v\v\v\v", "@d.com&uid=10&ro", "le=user"]
+
+      var bufKey  = crypto.randomBytes(16);
+      var ct1     = utils.webApp.encryptedProfileFor(s1, bufKey);
+      var ct2     = utils.webApp.encryptedProfileFor(s2, bufKey);
+ 
+      // Create the admin ciphertext by cutting and pasting element of c1 & c2
+      var ctAdmin = Buffer.concat([ct1.slice(0, 32), ct2.slice(16, 32)]);
+      var ptAdmin = utils.webApp.decryptProfile(ctAdmin, bufKey);
+
+      expect(ptAdmin).to.eql({
+        email: "xxxx@xxxx.com", 
+        uid:   "10", 
+        role:  "admin"
+      });
     });
   });
 });

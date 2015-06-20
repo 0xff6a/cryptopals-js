@@ -1,13 +1,14 @@
+var encryption = require('../encryption.js');
 //
 // Set of functions simulating a web application attacked in Challenge 13
 //
 //
-// Parses a URL encoded 'cookie'
+// Parses a URL encoded profile 'cookie' string
 //
 // String -> Object
 //
-function kvParse(sUrl) {
-  var result = sUrl
+function kvParse(sProfile) {
+  var result = sProfile
                 .split('&')
                 .reduce(function(res, kv) {
                   return res.pushPair(kv, '=');
@@ -28,9 +29,31 @@ function profileFor(sEmail) {
 
   return sProfile;
 }
+//
+// Creates an encrypted profile (using AES::ECB)
+//
+// String, Buffer -> Buffer
+//
+function encryptedProfileFor(sEmail, bufKey) {
+  var bufProfile = new Buffer(profileFor(sEmail), 'ascii');
 
-exports.kvParse    = kvParse;
-exports.profileFor = profileFor;
+  return encryption.aesECB.encrypt(bufProfile, bufKey);
+}
+//
+// Returns a decrypted profile hash 
+//
+// Buffer, Buffer -> Object
+//
+function decryptProfile(bufCt, bufKey) {
+  var bufProfile = encryption.aesECB.decrypt(bufCt, bufKey);
+
+  return kvParse(bufProfile.toString());
+}
+
+exports.kvParse             = kvParse;
+exports.profileFor          = profileFor;
+exports.encryptedProfileFor = encryptedProfileFor;
+exports.decryptProfile      = decryptProfile;
 
 // ================================================================================================
 // ================================================================================================
