@@ -125,4 +125,23 @@ describe('Set 2', function() {
       });
     });
   });
+
+  describe('Challenge 15 - PKCS7 padding validation', function() {
+    it('should strip padding from a strip', function() {
+      var buf = new Buffer('ICE ICE BABY\x04\x04\x04\x04', 'ascii');
+
+      expect(utils.pkcs7.stripAES(buf).toString()).to.eql('ICE ICE BABY');
+    });
+
+    it('should throw an error on invalid padding', function() {
+      var buf = new Buffer('ICE ICE BABY\x01\x02\x03\x04', 'ascii');
+
+      expect(utils.pkcs7.stripAES).withArgs(buf).to.throwException(/padding invalid/);
+    });
+  });
+
+  describe('Challenge 16 - CBC bitflipping attacks', function() {
+    
+  });
 });
+
