@@ -1,7 +1,9 @@
-var _     = require('underscore');
-var xor   = require('./utils/xor.js');
-var pkcs7 = require('./utils/pkcs7.js');
-var prg   = require('./utils/MersenneTwister.js');
+var _      = require('underscore');
+var xor    = require('./utils/xor.js');
+var pkcs7  = require('./utils/pkcs7.js');
+var prg    = require('./utils/MersenneTwister.js');
+var o      = require('./utils/BlackBox.js');
+var webApp = require('./utils/webApp.js');
 //
 // Buffer, Number -> Array(Buffer)
 //
@@ -50,9 +52,11 @@ function transpose(matrix) {
 }
 
 // Modules
-exports.xor   = xor;
-exports.pkcs7 = pkcs7;
-exports.prg   = prg;
+exports.xor    = xor;
+exports.pkcs7  = pkcs7;
+exports.prg    = prg;
+exports.o      = o;
+exports.webApp = webApp;
 
 // Functions
 exports.blocks    = blocks;

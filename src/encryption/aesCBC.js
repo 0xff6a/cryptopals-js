@@ -16,7 +16,7 @@ function encrypt(buf, bufKey, bufIv) {
     var bufC;
 
     bufM  = utils.xor.bytes(bufM, bufIv);
-    bufC  = processBlock(bufM, bufKey, crypto.createCipheriv);
+    bufC  = AES(bufM, bufKey, crypto.createCipheriv);
     bufIv = bufC;
 
     return bufC;
@@ -38,7 +38,7 @@ function decrypt(buf, bufKey, bufIv) {
   var bufPt;
 
   plainBlocks = blocks.map(function(bufC) {
-    var bufM = processBlock(bufC, bufKey, crypto.createDecipheriv);
+    var bufM = AES(bufC, bufKey, crypto.createDecipheriv);
     
     bufM  = utils.xor.bytes(bufM, bufIv);
     bufIv = bufC;
@@ -58,7 +58,7 @@ exports.encrypt = encrypt;
 // ================================================================================================
 // ================================================================================================
 
-function processBlock(buf, bufKey, cipherBuilder) {
+function AES(buf, bufKey, cipherBuilder) {
   var cipher = cipherBuilder('aes-128-ecb', bufKey, (new Buffer(0)));
   
   cipher.setAutoPadding(false);

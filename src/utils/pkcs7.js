@@ -7,10 +7,10 @@ var AES_BLOCK_SIZE = 16;
 // Buffer, Number -> Buffer
 //
 function pad(buf, blockSize) {
-  // if (buf.length % blockSize === 0) {
-  //   // Add a dummy padding block
-  //   return Buffer.concat([buf, buildPad(blockSize)]);
-  // }
+  if (buf.length % blockSize === 0) {
+    // Add a dummy padding block
+    return Buffer.concat([buf, buildPad(blockSize)]);
+  }
 
   var blocks       = utils.blocks(buf, blockSize);
   var paddingBlock = blocks.pop();
