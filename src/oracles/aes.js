@@ -21,13 +21,18 @@ function mode(bufPt) {
 
 function encryptRandom(bufPt) {
   var bufKey = crypto.randomBytes(BLOCK_SIZE);
-  var bufIv =  crypto.randomBytes(BLOCK_SIZE);
+  var bufIv  = crypto.randomBytes(BLOCK_SIZE);
+  var result = {};
 
-  if ( encryptionMode() === 'ECB') {
-    return encryption.aesECB.encrypt(bufPt, bufKey);
+  result.mode = randomMode();
+
+  if (result.mode === 'ECB') {
+    result.ct = encryption.aesECB.encrypt(bufPt, bufKey);
   } else {
-    return encryption.aesCBC.encrypt(bufPt, bufKey, bufIv);
+    result.ct = encryption.aesCBC.encrypt(bufPt, bufKey, bufIv);
   }
+
+  return result;
 }
 
 exports.isECB         = isECB;
@@ -52,8 +57,8 @@ function addRandomPad(bufPt) {
   return padded;
 }
 
-function encryptionMode() {
-  return MODES[Math.round(Math.random(MODES.length))];
+function randomMode() {
+  return MODES[Math.round(Math.random())];
 }
 
 function randomBytes() {
