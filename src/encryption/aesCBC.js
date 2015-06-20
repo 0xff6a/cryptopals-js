@@ -1,5 +1,6 @@
-var aes   = require('./aesECB.js');
-var utils = require('../utils.js');
+var crypto = require('crypto');
+var aes    = require('./aesECB.js');
+var utils  = require('../utils.js');
 // Encrypt block by block
 //  -> c[0] = E(k, m[0] ⨁ IV)
 //  -> c[1] = E(k, m[1] ⨁ c[0])
@@ -8,17 +9,14 @@ var utils = require('../utils.js');
 // Buffer, Buffer, Buffer -> Buffer
 //
 function encrypt(buf, bufKey, bufIv) {
-  var blocks;
+  var blocks = aes.blocks(utils.pkcs7.padAES(buf));
   var cipherBlocks;
-
-  buf    = utils.pkcs7.pad(buf, aes.BLOCK_SIZE);
-  blocks = aes.blocks(buf);
 
   cipherBlocks = blocks.map(function(bufM) {
     var bufC;
 
     bufM  = utils.xor.bytes(bufM, bufIv);
-    bufC  = aes.encrypt(bufM, bufKey);
+    bufC  = processBlock(bufM, bufKey, crypto.createCipheriv);
     bufIv = bufC;
 
     return bufC;
@@ -35,12 +33,12 @@ function encrypt(buf, bufKey, bufIv) {
 // Buffer, Buffer, Buffer -> Buffer
 //
 function decrypt(buf, bufKey, bufIv) {
-  var blocks = aes.blocks(buf);
+  var blocks   = aes.blocks(buf);
   var plainBlocks;
   var bufPt;
 
   plainBlocks = blocks.map(function(bufC) {
-    var bufM = aes.decrypt(bufC, bufKey);
+    var bufM = processBlock(bufC, bufKey, crypto.createDecipheriv);
     
     bufM  = utils.xor.bytes(bufM, bufIv);
     bufIv = bufC;
@@ -49,10 +47,24 @@ function decrypt(buf, bufKey, bufIv) {
   });
 
   bufPt = Buffer.concat(plainBlocks);
-  bufPt = utils.pkcs7.strip(bufPt, aes.BLOCK_SIZE);
+  bufPt = utils.pkcs7.stripAES(bufPt);
 
   return bufPt;
 }
 
 exports.decrypt = decrypt;
 exports.encrypt = encrypt;
+
+// ================================================================================================
+// ================================================================================================
+
+function processBlock(buf, bufKey, cipherBuilder) {
+  var cipher = cipherBuilder('aes-128-ecb', bufKey, (new Buffer(0)));
+  
+  cipher.setAutoPadding(false);
+
+  return Buffer.concat([
+    cipher.update(buf),
+    cipher.final()
+  ]);
+}

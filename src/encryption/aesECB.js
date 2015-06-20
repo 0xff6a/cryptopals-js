@@ -19,7 +19,7 @@ function decrypt(bufCt, bufKey) {
     aes.final()
   ]);
 
-  return data;
+  return utils.pkcs7.stripAES(data);
 }
 //
 // Buffer, Buffer -> Buffer
@@ -32,7 +32,7 @@ function encrypt(bufPt, bufKey) {
   aes.setAutoPadding(false);
 
   data = Buffer.concat([
-    aes.update(bufPt),
+    aes.update(utils.pkcs7.padAES(bufPt)),
     aes.final()
   ]);
 

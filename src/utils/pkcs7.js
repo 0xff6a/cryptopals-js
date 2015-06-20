@@ -1,13 +1,16 @@
 var utils = require('../utils.js');
+
+var AES_BLOCK_SIZE = 16;
 //
 // Add PKCS7 padding to a buffer. Note dummy block not added!
 //
 // Buffer, Number -> Buffer
 //
 function pad(buf, blockSize) {
-  if (buf.length % blockSize === 0) {
-    return buf;
-  }
+  // if (buf.length % blockSize === 0) {
+  //   // Add a dummy padding block
+  //   return Buffer.concat([buf, buildPad(blockSize)]);
+  // }
 
   var blocks       = utils.blocks(buf, blockSize);
   var paddingBlock = blocks.pop();
@@ -27,6 +30,12 @@ function pad(buf, blockSize) {
   return Buffer.concat(blocks);
 }
 //
+// For AES
+//
+function padAES(buf) {
+  return pad(buf, AES_BLOCK_SIZE);
+}
+//
 // Strip PKCS7 padding from a buffer
 //
 // Buffer, Number -> Buffer
@@ -37,7 +46,7 @@ function strip(buf, blockSize) {
   var padLen;
   
   // Bad practice - deliberately implemented so we can attack it!
-  if (!isValid(paddingBlock)) {
+  if (!isValid(paddingBlock, blockSize)) {
     throw new Error('PKCS7 padding invalid');
   }
 
@@ -48,16 +57,30 @@ function strip(buf, blockSize) {
 
   return Buffer.concat(blocks);
 }
+//
+// for AES
+//
+function stripAES(buf) {
+  return strip(buf, AES_BLOCK_SIZE);
+}
 
-exports.pad   = pad;
-exports.strip = strip;
+exports.pad      = pad;
+exports.padAES   = padAES;
+exports.strip    = strip;
+exports.stripAES = stripAES;
 
 // ================================================================================================
 // ================================================================================================
 
-function isValid(bufPad) {
-  var padLen   = bufPad[bufPad.length - 1];
-  var validPad = buildPad(padLen);
+function isValid(bufPad, blockSize) {
+  var padLen = bufPad[bufPad.length - 1];
+  var validPad;
+
+  if (padLen > bufPad.length) {
+    return false;
+  }
+   
+  validPad = buildPad(padLen);
 
   return bufPad.slice(-padLen).equals(validPad);
 }

@@ -93,6 +93,7 @@ function encrypt(bufPt, seed) {
 
 var T_WINDOW = 5000;
 
+// Decrypt if we know the current timestamp was used to seed the PRG
 function decryptTimestampKey(bufCt, bufKnown) {
   var now     = new Date().getTime();
   var minT    = now - T_WINDOW;

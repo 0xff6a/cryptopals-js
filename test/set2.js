@@ -40,4 +40,13 @@ describe('Set 2', function() {
       expect(encryption.aesCBC.encrypt(bufPt, bufKey, bufIv)).to.eql(data);
     });
   });
+
+  describe('Challenge 11 - Implement an ECB/CBC detection oracles', function() {
+    it('should detect whether a ciphertext was encrypted with ECB or CBC', function() {
+      var bufPt = new Buffer(200).fill('A');
+      var bufCt = oracles.aes.encryptRandom(bufPt);
+
+      expect(oracles.aes.mode(bufPt)).to.eql('ECB');
+    });
+  });
 });

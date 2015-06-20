@@ -170,7 +170,7 @@ describe('Set 1', function() {
       result = data.filter(function(ct) {
         var bufCt = new Buffer(ct, 'hex');
 
-        return oracles.aesECB.detect(bufCt);
+        return oracles.aes.isECB(bufCt);
       });
 
       expect(result.length).to.eql(1);
