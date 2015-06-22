@@ -52,20 +52,21 @@ describe('Set 2', function() {
   });
 
   describe('Challenge 12 - Byte-at-a-time ECB decryption', function() {
-    it.skip('should decrypt an AES ECB string from a black box encoder', function() {
+    it('should decrypt an AES ECB string from a black box encoder', function() {
       var target = 
         new Buffer(
           'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg' + 
           'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq' +
-          'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK'
+          'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK',
+          'base64'
         );
       var box     = new utils.o.BlackBox(target);
-      var content = oracles.aes.revealContent(box);
+      var content = oracles.aes.revealContent(box).toString('ascii');
 
       expect(content).to.eql(
         "Rollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe " +
         "girlies on standby waving just to say hi\nDid you stop? No, I just " +
-        "drove by\n\x06\x06\x06\x06\x06\x06"
+        "drove by\n\x01\x00\x00\x00\x00\x00"
       );
     });
   });

@@ -15,7 +15,7 @@ BlackBox.prototype.encrypt = function(bufPt) {
 };
 
 BlackBox.prototype.bytesLength = function() {
-  return this.target.length;
+  return this.encrypt(new Buffer(0)).length;
 };
 
 exports.BlackBox = BlackBox;
