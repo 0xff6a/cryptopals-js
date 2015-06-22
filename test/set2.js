@@ -153,23 +153,28 @@ describe('Set 2', function() {
     it('should allow injection of admin token with CBC bitflipping', function() {
       //
       // Examine the known blocks:
-      // ["comment1=cooking", "%20MCs;userdata=",";comment2=%20lik","e%20a%20pound%20", "of%20bacon"]
+      // [ "comment1=cooking", "%20MCs;userdata=", "xxxxxxxxxxxxxxxx", 
+      //   ";comment2=%20lik","e%20a%20pound%20", "of%20bacon" ]
       //
-      // We can corrupt block[3] to read 'xxxx;admin=true;'
-      // Inject usedata with a block = ';comment2=%20lik' XOR 'xxxx;admin=true;'
+      // We can corrupt block[2] (which we control) to read 'xxxx;admin=true;'
       //
+      // Input we control -> block[2]
+      var sData = 'xxxxxxxxxxxxxxxx';
+
+      // String to inject
       var bufInject = new Buffer('xxxx;admin=true;');
 
-      // Ciphertext with empty user data
-      var bufCt = utils.webApp.encryptCommentString('', bufKey, bufIv);
+      // Ciphertext with our data input
+      var bufCt = utils.webApp.encryptCommentString(sData, bufKey, bufIv);
 
-      // Now inject a block = 'xxxx;admin=true;' XOR AES(';comment2=%20lik')
-      var bufExploit = utils.xor.bytes(bufInject, bufCt.slice(32, 48));
+      // Now inject a block = ct block XOR 'xxxx;admin=true;' XOR 'xxxxxxxxxxxxxxxx'
+      var blocks     = utils.blocks(bufCt, 16);
+      var bufExploit = utils.xor.bytes(blocks[1], bufInject);
+      bufExploit     = utils.xor.bytes(bufExploit, new Buffer(sData));
 
       // Now splice together
-      bufCt = utils.blocks(bufCt, 16);
-      bufCt.splice(2, 0, bufExploit);
-      bufCt = Buffer.concat(bufCt);
+      blocks.splice(2, 0, bufExploit);
+      bufCt = Buffer.concat(blocks);
 
       expect(utils.webApp.isAdminComment(bufCt, bufKey, bufIv)).to.be(true);
     });

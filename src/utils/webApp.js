@@ -1,7 +1,6 @@
 var encryption = require('../encryption.js');
 //
-// Set of functions simulating a web application attacked in Challenge 13
-//
+// Set of functions simulating a web application attacked in the challenges
 //
 // Parses a URL encoded profile 'cookie' string
 //
