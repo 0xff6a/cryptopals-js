@@ -7,6 +7,24 @@ var oracles    = require('../src/oracles.js');
 var helpers    = require('./helpers.js');
 
 describe('Set 3', function() {
+  describe('Challenge 17 - CBC Padding oracle', function() {
+    var targets = [
+      new Buffer('MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=', 'base64'),
+      new Buffer('MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=', 'base64'),
+      new Buffer('MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==', 'base64'),
+      new Buffer('MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==', 'base64'),
+      new Buffer('MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl', 'base64'),
+      new Buffer('MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==', 'base64'),
+      new Buffer('MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==', 'base64'),
+      new Buffer('MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=', 'base64'),
+      new Buffer('MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=', 'base64'),
+      new Buffer('MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93', 'base64')
+    ];
+
+    var server = new CBCServer(targets);
+    
+  });
+
   describe('Challenge 18  - Implement AES in CTR mode', function() {
     var bufCt  = 
       new Buffer('L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==', 'base64');

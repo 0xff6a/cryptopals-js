@@ -65,7 +65,11 @@ function encryptCommentString(sUserData, bufKey, bufIv) {
 
   return encryption.aesCBC.encrypt(bufPt, bufKey, bufIv);
 }
-
+//
+// Checks whether an encrypted comment string has an admin token
+//
+// Buffer, Buffer, Buffer -> Boolean
+//
 function isAdminComment(bufCt, bufKey, bufIv) {
   var bufPt = encryption.aesCBC.decrypt(bufCt, bufKey, bufIv);
   var match = bufPt
@@ -74,6 +78,49 @@ function isAdminComment(bufCt, bufKey, bufIv) {
 
   return !!match;
 }
+//
+// Creates a dummy server class for CBC padding attack
+//
+// Array(Buffer) -> cbcServer
+//
+function CBCServer(arrTargets) {
+  this.key     = crypto.randomBytes(16);
+  this.targets = arrTargets;
+}
+//
+// Encrypts a random plaintext from a selection and returns ciphertext, iv
+// 
+// Null -> Object
+//
+CBCServer.prototype.encryptRandomSelection = function() {
+  var index  = Math.round(Math.random() * this.targets.length);
+  var bufPt  = this.targets[index];
+  var bufIv  = crypto.randomBytes(16);
+  var result = {};
+
+  result.iv = bufIv;
+  result.ct = encryption.aesCBC.encrypt(bufPt, this.key, bufIv)
+
+  return result;
+};
+//
+// Checks for valid padding in an encrypted string
+// 
+// Object -> Boolean
+//
+CBCServer.prototype.isValidPadding(serverResult) = function() {
+  try {
+    encryption.aesCBC.decrypt(serverResult.ct, this.key, serverResult.iv);
+  } catch(err) {
+    if (err.message.match(/padding invalid/)) {
+      return false;
+    }
+
+    throw err;
+  }
+
+  return true;
+};
 
 exports.kvParse              = kvParse;
 exports.profileFor           = profileFor;
@@ -81,6 +128,7 @@ exports.encryptedProfileFor  = encryptedProfileFor;
 exports.decryptProfile       = decryptProfile;
 exports.encryptCommentString = encryptCommentString;
 exports.isAdminComment       = isAdminComment;
+exports.CBCServer            = CBCServer;
 
 // ================================================================================================
 // ================================================================================================
