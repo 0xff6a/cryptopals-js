@@ -7,7 +7,7 @@ var oracles    = require('../src/oracles.js');
 var helpers    = require('./helpers.js');
 
 describe('Set 3', function() {
-  describe('Challenge 17 - CBC Padding oracle', function() {
+  describe.skip('Challenge 17 - CBC Padding oracle', function() {
     var targets = [
       new Buffer('MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=', 'base64'),
       new Buffer('MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=', 'base64'),
@@ -21,7 +21,7 @@ describe('Set 3', function() {
       new Buffer('MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93', 'base64')
     ];
 
-    var server = new CBCServer(targets);
+    var server = new utils.webApp.CBCServer(targets);
     
   });
 

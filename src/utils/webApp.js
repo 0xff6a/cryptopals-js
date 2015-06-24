@@ -1,4 +1,5 @@
 var encryption = require('../encryption.js');
+var crypto     = require('crypto');
 //
 // Set of functions simulating a web application attacked in the challenges
 //
@@ -99,7 +100,7 @@ CBCServer.prototype.encryptRandomSelection = function() {
   var result = {};
 
   result.iv = bufIv;
-  result.ct = encryption.aesCBC.encrypt(bufPt, this.key, bufIv)
+  result.ct = encryption.aesCBC.encrypt(bufPt, this.key, bufIv);
 
   return result;
 };
@@ -108,7 +109,7 @@ CBCServer.prototype.encryptRandomSelection = function() {
 // 
 // Object -> Boolean
 //
-CBCServer.prototype.isValidPadding(serverResult) = function() {
+CBCServer.prototype.isValidPadding = function(serverResult) {
   try {
     encryption.aesCBC.decrypt(serverResult.ct, this.key, serverResult.iv);
   } catch(err) {

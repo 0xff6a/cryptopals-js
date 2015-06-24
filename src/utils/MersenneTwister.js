@@ -74,14 +74,7 @@ MersenneTwister.prototype.generateNumbers = function() {
   }
 };
 
-exports.MersenneTwister = MersenneTwister;
-exports.unShiftRightXor = unShiftRightXor;
-exports.unShiftLeftXor  = unShiftLeftXor;
-
-// ================================================================================================
-// ================================================================================================
-
-// Function to reverse left shift and xor operation
+// Functions to reverse left shift and xor operation
 //
 // 101101110101111001|11111001110010                     y
 // 000000000000000000|10110111010111100111111001110010   y >>> 18
@@ -142,3 +135,7 @@ function unShiftLeftXor(value, shift, mask) {
 
   return result >>> 0;
 }
+
+exports.MersenneTwister = MersenneTwister;
+exports.unShiftRightXor = unShiftRightXor;
+exports.unShiftLeftXor  = unShiftLeftXor;
