@@ -90,14 +90,14 @@ describe('Set 4', function() {
           '', 
           bufSecret 
         );
-      
-      var blocks = utils.blocks(bufCt, 16);
 
       // Modify the message C_1, C_2, C_3 -> C_1, 0, C_1
-      blocks[1] = new Buffer(16).fill('\x00');
-      blocks[2] = blocks[0];
-      bufCt     = Buffer.concat(blocks); 
+      var blocks = utils.blocks(bufCt, 16);
+      blocks[1]  = new Buffer(16).fill('\x00');
+      blocks[2]  = blocks[0];
+      bufCt      = Buffer.concat(blocks); 
 
+      // Feed the modified ciphertext back to the server
       var response = 
         utils.webApp.parseComment(
           encryption.aesCBC.decrypt, 
@@ -107,7 +107,7 @@ describe('Set 4', function() {
 
       var plainBlocks = utils.blocks(response.input, 16);
 
-      //Extract the key
+      //Extract the key from the response
       var bufKey = utils.xor.bytes(plainBlocks[0], plainBlocks[2]); 
 
       expect(bufKey).to.eql(bufSecret);
