@@ -4,6 +4,7 @@ var analyzers  = require('../analyzers.js');
 var encryption = require('../encryption.js');
 
 // NOTE nonce and ctr are in little-endian format
+// default nonce \x00\x00\x00\x00\x00\x00\x00\x00
 
 // Decrypt block by block
 // -> m[0] = F(k, nonce || ctr) ⨁ c[0]
@@ -13,6 +14,10 @@ var encryption = require('../encryption.js');
 // Buffer, Buffer, Buffer -> Buffer
 //
 function decrypt(bufCt, bufKey, bufNonce) {
+  if (typeof bufNonce === 'undefined') {
+    bufNonce = new Buffer(8).fill('\x00');
+  }
+
   var bufCtr = new Buffer(8).fill('\x00');
   var blocks = aes.blocks(bufCt);
   var plainBlocks;
@@ -88,12 +93,27 @@ function statisticalDecrypt(arrCts) {
 
   return encryption.repeatKeyXOR.decryptNoKey(Buffer.concat(truncatedCts));
 }
+//
+// Edit the plaintext underlying the ciphertext input at the supplied offset
+//
+// Buffer, Buffer, Number, Buffer -> Buffer
+//
+function editCt(bufCt, bufKey, offset, bufNewPt) {
+  var bufPt = decrypt(bufCt, bufKey);
+  var bufRes;
+
+  bufNewPt.copy(bufPt, offset);
+  bufRes = encrypt(bufPt, bufKey);
+
+  return bufRes;
+}
 
 exports.decrypt            = decrypt;
 exports.encrypt            = encrypt;
 exports.guessKeyStream     = guessKeyStream;
 exports.statisticalDecrypt = statisticalDecrypt;
 exports.littleEndIncrement = incrementCtr;
+exports.editCt             = editCt;
 
 // ================================================================================================
 // ================================================================================================
