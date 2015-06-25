@@ -143,23 +143,20 @@ describe('Set 2', function() {
 
   describe('Challenge 16 - CBC bitflipping attacks', function() {
     var bufKey = crypto.randomBytes(16);
-    var bufIv  = crypto.randomBytes(16);
 
     it('should not allow injection of an admin token through the comment string', function() {
       var bufCt = 
         utils.webApp.encryptCommentString(
           encryption.aesCBC.encrypt, 
           '1;admin=true;', 
-          bufKey, 
-          bufIv
+          bufKey
         );
 
       var result = 
         utils.webApp.isAdminComment(
           encryption.aesCBC.decrypt, 
           bufCt, 
-          bufKey, 
-          bufIv
+          bufKey
         );
 
       expect(result).to.be(false);
@@ -184,8 +181,7 @@ describe('Set 2', function() {
         utils.webApp.encryptCommentString(
           encryption.aesCBC.encrypt,
           sData, 
-          bufKey, 
-          bufIv
+          bufKey
         );
 
       // Now inject a block = ct block XOR 'xxxx;admin=true;' XOR 'xxxxxxxxxxxxxxxx'
@@ -202,8 +198,7 @@ describe('Set 2', function() {
         utils.webApp.isAdminComment(
           encryption.aesCBC.decrypt, 
           bufCt, 
-          bufKey, 
-          bufIv
+          bufKey
         )
       ).to.be(true);
     });

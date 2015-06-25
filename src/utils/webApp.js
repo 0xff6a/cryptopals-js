@@ -50,11 +50,13 @@ function decryptProfile(bufCt, bufKey) {
   return kvParse(bufProfile.toString());
 }
 //
-// Creates an encrypted comment string
+// Creates an encrypted comment string 
+//
+// Deliberately using key as IV to break!
 //
 // Function, String, Buffer -> Buffer
 //
-function encryptCommentString(fEncrypt, sUserData, bufKey, bufIv) {
+function encryptCommentString(fEncrypt, sUserData, bufKeyIv) {
   var bufPt;
 
   bufPt = new Buffer(
@@ -64,20 +66,51 @@ function encryptCommentString(fEncrypt, sUserData, bufKey, bufIv) {
             'ascii'
           );
 
-  return fEncrypt(bufPt, bufKey, bufIv);
+  return fEncrypt(bufPt, bufKeyIv, bufKeyIv);
 }
 //
 // Checks whether an encrypted comment string has an admin token
 //
+// Deliberately using key as IV to break! 
+//
 // Function, Buffer, Buffer, Buffer -> Boolean
 //
-function isAdminComment(fDecrypt, bufCt, bufKey, bufIv) {
-  var bufPt = fDecrypt(bufCt, bufKey, bufIv);
+function isAdminComment(fDecrypt, bufCt, bufKeyIv) {
+  var bufPt = fDecrypt(bufCt, bufKeyIv, bufKeyIv);
   var match = bufPt
                 .toString()
                 .match(/;admin=true;/);
 
   return !!match;
+}
+//
+// Checks whether an encrypted comment string has only contains printable ascii
+// If not returns an error code and the unencrypted string
+//
+// Function, Buffer, Buffer, Buffer -> Boolean
+//
+function parseComment(fDecrypt, bufCt, bufKeyIv) {
+  var bufPt = fDecrypt(bufCt, bufKeyIv, bufKeyIv);
+
+  if (!isValidQuery(bufPt)) {
+    return { status: 500, input: bufPt};
+  }
+
+  return { status: 200 };
+}
+//
+// Checks if input contains any non printable ASCII characters
+//
+// Buffer -> Boolean
+//
+function isValidQuery(bufPt) {
+  for (var i = 0; i < bufPt.length; i++) {
+    if (bufPt[i] > 127) {
+      return false;
+    } 
+  }
+
+  return true;
 }
 //
 // Creates a dummy server class for CBC padding attack
@@ -123,12 +156,14 @@ CBCServer.prototype.isValidPadding = function(serverResult) {
   return true;
 };
 
+
 exports.kvParse              = kvParse;
 exports.profileFor           = profileFor;
 exports.encryptedProfileFor  = encryptedProfileFor;
 exports.decryptProfile       = decryptProfile;
 exports.encryptCommentString = encryptCommentString;
 exports.isAdminComment       = isAdminComment;
+exports.parseComment         = parseComment;
 exports.CBCServer            = CBCServer;
 
 // ================================================================================================
@@ -150,3 +185,4 @@ function sanitize(sUrl) {
           .replace(/'/g, "\\'")
           .replace(/"/g, "\\\"");
 }
+

@@ -29,8 +29,7 @@ describe('Set 3', function() {
     var bufCt  = 
       new Buffer('L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==', 'base64');
     var bufKey    = new Buffer('YELLOW SUBMARINE');
-    var bufNonce  = new Buffer(8).fill('\x00');
-    var plaintext = encryption.aesCTR.decrypt(bufCt, bufKey, bufNonce);
+    var plaintext = encryption.aesCTR.decrypt(bufCt, bufKey);
 
     it('should increment a little endian ctr', function() {
       var bufCtr = new Buffer(8).fill('\x00', 'ascii');
@@ -50,7 +49,7 @@ describe('Set 3', function() {
     });
 
     it('should encrypt in AES::CTR mode', function() {
-      expect(encryption.aesCTR.encrypt(plaintext, bufKey, bufNonce)).to.eql(bufCt);
+      expect(encryption.aesCTR.encrypt(plaintext, bufKey)).to.eql(bufCt);
     });
   });
   

@@ -35,7 +35,6 @@ describe('Set 4', function() {
   describe('Challenge 26 - CTR bitflipping attacks', function() {
     it('should inject an admin token', function() {
       var bufKey = crypto.randomBytes(16);
-      var bufIv  = crypto.randomBytes(16);
       //
       // Examine the known blocks:
       // [ "comment1=cooking", "%20MCs;userdata=", "xxxxxxxxxxxxxxxx", 
@@ -54,8 +53,7 @@ describe('Set 4', function() {
         utils.webApp.encryptCommentString(
           encryption.aesCTR.encrypt,
           sData, 
-          bufKey, 
-          bufIv
+          bufKey 
         );
 
       // Now retrieve keystream from block we control CT[2] XOR 'xxxxxxxxxxxxxxxx'
@@ -74,10 +72,45 @@ describe('Set 4', function() {
         utils.webApp.isAdminComment(
           encryption.aesCTR.decrypt, 
           bufCt, 
-          bufKey, 
-          bufIv
+          bufKey
         )
       ).to.be(true);
+    });
+  });
+
+  describe('Challenge 27 - Recover key from CBC with IV=Key', function() {
+    it('should recover the key by forcing a server error that reveals plaintext', function() {
+      // Create a secret key
+      var bufSecret = crypto.randomBytes(16);
+      
+      // Encrypt a message AES-CBC(P_1, P_2, P_3) -> C_1, C_2, C_3
+      var bufCt  = 
+        utils.webApp.encryptCommentString(
+          encryption.aesCBC.encrypt,
+          '', 
+          bufSecret 
+        );
+      
+      var blocks = utils.blocks(bufCt, 16);
+
+      // Modify the message C_1, C_2, C_3 -> C_1, 0, C_1
+      blocks[1] = new Buffer(16).fill('\x00');
+      blocks[2] = blocks[0];
+      bufCt     = Buffer.concat(blocks); 
+
+      var response = 
+        utils.webApp.parseComment(
+          encryption.aesCBC.decrypt, 
+          bufCt, 
+          bufSecret
+        );
+
+      var plainBlocks = utils.blocks(response.input, 16);
+
+      //Extract the key
+      var bufKey = utils.xor.bytes(plainBlocks[0], plainBlocks[2]); 
+
+      expect(bufKey).to.eql(bufSecret);
     });
   });
 });

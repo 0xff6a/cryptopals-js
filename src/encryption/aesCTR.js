@@ -4,7 +4,7 @@ var analyzers  = require('../analyzers.js');
 var encryption = require('../encryption.js');
 
 // NOTE nonce and ctr are in little-endian format
-// default nonce \x00\x00\x00\x00\x00\x00\x00\x00
+// Default nonce \x00\x00\x00\x00\x00\x00\x00\x00
 
 // Decrypt block by block
 // -> m[0] = F(k, nonce || ctr) ⨁ c[0]
@@ -13,13 +13,10 @@ var encryption = require('../encryption.js');
 //
 // Buffer, Buffer, Buffer -> Buffer
 //
-function decrypt(bufCt, bufKey, bufNonce) {
-  if (typeof bufNonce === 'undefined') {
-    bufNonce = new Buffer(8).fill('\x00');
-  }
-
-  var bufCtr = new Buffer(8).fill('\x00');
-  var blocks = aes.blocks(bufCt);
+function decrypt(bufCt, bufKey) {
+  var  bufNonce = new Buffer(8).fill('\x00');
+  var bufCtr    = new Buffer(8).fill('\x00');
+  var blocks    = aes.blocks(bufCt);
   var plainBlocks;
 
   plainBlocks = blocks.map(function(bufC) {
@@ -37,8 +34,8 @@ function decrypt(bufCt, bufKey, bufNonce) {
 // Symmetric function E <=> D
 //
 //
-function encrypt(bufPt, bufKey, bufNonce) {
-  return decrypt(bufPt, bufKey, bufNonce);
+function encrypt(bufPt, bufKey) {
+  return decrypt(bufPt, bufKey);
 }
 //
 // Buffer -> Buffer
