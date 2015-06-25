@@ -52,9 +52,9 @@ function decryptProfile(bufCt, bufKey) {
 //
 // Creates an encrypted comment string
 //
-// String, Buffer -> Buffer
+// Function, String, Buffer -> Buffer
 //
-function encryptCommentString(sUserData, bufKey, bufIv) {
+function encryptCommentString(fEncrypt, sUserData, bufKey, bufIv) {
   var bufPt;
 
   bufPt = new Buffer(
@@ -64,15 +64,15 @@ function encryptCommentString(sUserData, bufKey, bufIv) {
             'ascii'
           );
 
-  return encryption.aesCBC.encrypt(bufPt, bufKey, bufIv);
+  return fEncrypt(bufPt, bufKey, bufIv);
 }
 //
 // Checks whether an encrypted comment string has an admin token
 //
-// Buffer, Buffer, Buffer -> Boolean
+// Function, Buffer, Buffer, Buffer -> Boolean
 //
-function isAdminComment(bufCt, bufKey, bufIv) {
-  var bufPt = encryption.aesCBC.decrypt(bufCt, bufKey, bufIv);
+function isAdminComment(fDecrypt, bufCt, bufKey, bufIv) {
+  var bufPt = fDecrypt(bufCt, bufKey, bufIv);
   var match = bufPt
                 .toString()
                 .match(/;admin=true;/);

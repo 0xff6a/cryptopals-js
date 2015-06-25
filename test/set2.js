@@ -146,9 +146,23 @@ describe('Set 2', function() {
     var bufIv  = crypto.randomBytes(16);
 
     it('should not allow injection of an admin token through the comment string', function() {
-      var bufCt = utils.webApp.encryptCommentString('1;admin=true;', bufKey, bufIv);
+      var bufCt = 
+        utils.webApp.encryptCommentString(
+          encryption.aesCBC.encrypt, 
+          '1;admin=true;', 
+          bufKey, 
+          bufIv
+        );
 
-      expect(utils.webApp.isAdminComment(bufCt, bufKey, bufIv)).to.be(false);
+      var result = 
+        utils.webApp.isAdminComment(
+          encryption.aesCBC.decrypt, 
+          bufCt, 
+          bufKey, 
+          bufIv
+        );
+
+      expect(result).to.be(false);
     });
 
     it('should allow injection of admin token with CBC bitflipping', function() {
@@ -166,7 +180,13 @@ describe('Set 2', function() {
       var bufInject = new Buffer('xxxx;admin=true;');
 
       // Ciphertext with our data input
-      var bufCt = utils.webApp.encryptCommentString(sData, bufKey, bufIv);
+      var bufCt = 
+        utils.webApp.encryptCommentString(
+          encryption.aesCBC.encrypt,
+          sData, 
+          bufKey, 
+          bufIv
+        );
 
       // Now inject a block = ct block XOR 'xxxx;admin=true;' XOR 'xxxxxxxxxxxxxxxx'
       var blocks     = utils.blocks(bufCt, 16);
@@ -177,7 +197,15 @@ describe('Set 2', function() {
       blocks.splice(2, 0, bufExploit);
       bufCt = Buffer.concat(blocks);
 
-      expect(utils.webApp.isAdminComment(bufCt, bufKey, bufIv)).to.be(true);
+
+      expect(
+        utils.webApp.isAdminComment(
+          encryption.aesCBC.decrypt, 
+          bufCt, 
+          bufKey, 
+          bufIv
+        )
+      ).to.be(true);
     });
   });
 });

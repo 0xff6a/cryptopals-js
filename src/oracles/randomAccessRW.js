@@ -1,8 +1,9 @@
 var utils = require('../utils.js');
 //
 // Simulate random access read/write decryption
-// Using CT = PT XOR K -> we supply PT and receive CT 
-// K = CT XOR PT
+//
+// Using CT = PT XOR K, we supply PT and receive CT 
+// -> K = CT XOR PT
 //
 // Buffer, Buffer, Function -> Buffer
 //
