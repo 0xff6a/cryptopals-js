@@ -113,4 +113,14 @@ describe('Set 4', function() {
       expect(bufKey).to.eql(bufSecret);
     });
   });
+
+  describe('Challenge 28 - Implement SHA1 hash algorithm', function() {
+    it('should produce the expected result', function() {
+      var buf1 = new Buffer('cookin MCs like a pound of bacon');
+      var buf2 = new Buffer('shall I compare thee to a summer\'s day');
+
+      expect(mac.SHA1.digest(buf1)).to.eql(new Buffer('c0f03429637de12c90f37e2c5c032276e477c51f'));
+      expect(mac.SHA1.digest(buf2)).to.eql(new Buffer('a528ca8d902931e2765f45f7a3d6242633057462'));
+    });
+  });
 });
