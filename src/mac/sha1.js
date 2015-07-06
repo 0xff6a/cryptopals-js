@@ -4,22 +4,37 @@ var BIT_M      = 8;
 var RET_SIZE   = 160;
 var BLOCK_SIZE = 512;
 var MASK       = 0xffffffff; // All arithmetic is modulo 2**32
+
+var H_SHA1 = 
+[
+  0x67452301,
+  0xEFCDAB89,
+  0x98BADCFE,
+  0x10325476,
+  0xC3D2E1F0
+];
 //
-// Generates a SHA-1 digest given a message buffer
+// Generates a SHA-1 digest given a message buffer. 
+// Accepts fixed registers as optional argument
 //
 // Due to limitations in JS this will process messages up to 2**32 - 1 
 // size rather than 2**64 - 1
 //
-// Buffer -> Buffer
+// Buffer[, Array(Number)] -> Buffer
 //
-function digest(bufM) {
+function digest(bufM, hInitial) {
+  
+  // If no initial registers passed use the SHA-1 magic numbers
+  if (hInitial === undefined) {
+    hInitial = H_SHA1;
+  }
   
   // Initialize variables
-  var h0 = 0x67452301;
-  var h1 = 0xEFCDAB89;
-  var h2 = 0x98BADCFE;
-  var h3 = 0x10325476;
-  var h4 = 0xC3D2E1F0;
+  var h0 = hInitial[0];
+  var h1 = hInitial[1];
+  var h2 = hInitial[2];
+  var h3 = hInitial[3];
+  var h4 = hInitial[4];
 
   var hh = new Buffer(RET_SIZE / BIT_M);
 
@@ -47,43 +62,15 @@ function digest(bufM) {
       );
     }
 
-    // Initialize hash value for this chunk:
-    var a = h0;
-    var b = h1;
-    var c = h2;
-    var d = h3;
-    var e = h4;
-
     // Main loop calculating SHA function 80x
-    for (i = 0; i < 80; i++) {
-      if (i >= 0 && i < 20) {
-        f = (b & c) | (~ b & d);
-        k = 0x5A827999;
-      } else if (i >= 20 && i < 40) {
-        f = b ^ c ^ d;
-        k = 0x6ED9EBA1;
-      } else if (i >= 40 && i < 60) {
-        f = (b & c) | (b & d) | (c & d);
-        k = 0x8F1BBCDC;
-      } else if (i >= 60 && i < 80) {
-        f = b ^ c ^ d;
-        k = 0xCA62C1D6;
-      }
-
-      temp = (bitRotateL(a, 5) + f + e + k + words[i]) & MASK;
-      e    = d;
-      d    = c;
-      c    = bitRotateL(b, 30);
-      b    = a;
-      a    = temp;
-    }
+    var registers = ShaRegisters([h0, h1, h2, h3, h4], words);
 
     // Add this chunk's hash to result so far:
-    h0 = (h0 + a) & MASK;
-    h1 = (h1 + b) & MASK; 
-    h2 = (h2 + c) & MASK;
-    h3 = (h3 + d) & MASK;
-    h4 = (h4 + e) & MASK;
+    h0 = (h0 + registers[0]) & MASK;
+    h1 = (h1 + registers[1]) & MASK; 
+    h2 = (h2 + registers[2]) & MASK;
+    h3 = (h3 + registers[3]) & MASK;
+    h4 = (h4 + registers[4]) & MASK;
   });
 
   // Produce the final hash value (big-endian) as a 160 bit number:
@@ -157,13 +144,13 @@ function bitRotateL(number, shift) {
   return (number << shift) | (number >>> (32 - shift));
 }
 
-function mainSHA() {
-  // Initialize hash value for this chunk:
-  var a = h0;
-  var b = h1;
-  var c = h2;
-  var d = h3;
-  var e = h4;
+function ShaRegisters(hInitial, words) {
+  // Initialize hash values for this chunk:
+  var a = hInitial[0];
+  var b = hInitial[1];
+  var c = hInitial[2];
+  var d = hInitial[3];
+  var e = hInitial[4];
 
   // Main loop calculating SHA function 80x
   for (i = 0; i < 80; i++) {
@@ -188,4 +175,6 @@ function mainSHA() {
     b    = a;
     a    = temp;
   }
+
+  return [a, b, c, d, e];
 }

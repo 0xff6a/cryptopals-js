@@ -160,6 +160,7 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 29 - break SHA1 MAC using key length extension', function() {
-    
+    // fix sha registers
+    // recalculate the hash!
   });
 });
