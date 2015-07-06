@@ -116,6 +116,10 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 28 - Implement SHA1 hash algorithm', function() {
+    var bufKey = new Buffer('YELLOW SUBMARINE');
+    var bufM   = new Buffer('We all live in a what?');
+    var bufPt  = Buffer.concat([bufKey, bufM]);
+
     it('should pad a message to 512 bits multiple', function() {
       var bufM        = new Buffer(664 / 8).fill('A');
       var bufExpected = new Buffer(
@@ -125,15 +129,37 @@ describe('Set 4', function() {
         '0000000000000000000000000000000000000000000000000298', 'hex'
       );
 
-      expect(mac.SHA1.pad(bufM)).to.eql(bufExpected);
+      expect(mac.SHA1.padMD(bufM)).to.eql(bufExpected);
     });
 
-    it('should produce the expected result', function() {
+    it('should produce the expected message digest', function() {
       var buf1 = new Buffer('cookin MCs like a pound of bacon');
       var buf2 = new Buffer('shall I compare thee to a summer\'s day');
 
-      expect(mac.SHA1.digest(buf1)).to.eql(new Buffer('be120668f532ec01b9ca4d924999832281f79354', 'hex'));
-      expect(mac.SHA1.digest(buf2)).to.eql(new Buffer('1b0d1a96f5f7daba86d38a54e9dd02ccc1e57916', 'hex'));
+      expect(mac.SHA1.digest(buf1)).to.eql(
+        new Buffer('be120668f532ec01b9ca4d924999832281f79354', 'hex')
+      );
+      expect(mac.SHA1.digest(buf2)).to.eql(
+        new Buffer('1b0d1a96f5f7daba86d38a54e9dd02ccc1e57916', 'hex')
+      );
     });
+
+    it('should produce a MAC given a message and secret key', function() {
+      expect(mac.SHA1.authenticate(bufM, bufKey)).to.eql(
+        mac.SHA1.digest(bufPt)
+      );
+    });
+
+    it('should verify a mac given message and key', function() {
+      var bad  = crypto.randomBytes(20);
+      var good = mac.SHA1.authenticate(bufM, bufKey);
+      
+      expect(mac.SHA1.verify(bad, bufM, bufKey)).to.eql(false);
+      expect(mac.SHA1.verify(good, bufM, bufKey)).to.eql(true);
+    });
+  });
+
+  describe('Challenge 29 - break SHA1 MAC using key length extension', function() {
+    
   });
 });
