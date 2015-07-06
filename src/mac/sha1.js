@@ -13,7 +13,7 @@ var H_SHA1     = [
 ];
 //
 // Generates a SHA-1 digest given a message buffer. 
-// Accepts fixed registers as optional argument
+// Accepts fixed registers and prefix length as optional arguments
 //
 // Due to limitations in JS this will process messages up to 2**32 - 1 
 // size rather than 2**64 - 1
@@ -37,7 +37,7 @@ function digest(bufM, hInitial, mLen) {
   var hh = new Buffer(RET_SIZE / BIT_M);
 
   // Pre-processing (pad message to 512-bit blocks)
-  bufM = padMD(bufM, mLen);
+  bufM = padMD2(bufM, mLen);
 
   // Process the message in successive 512-bit chunks:
   var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
@@ -107,21 +107,51 @@ function verify(bufMac, bufM) {
 //
 // Buffer, Number -> Buffer
 //
-function padMD(bufM, mLen) {
+function padMD(bufM, prefixLen) {
+  prefixLen = prefixLen || 0;
+
   var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
   var bufRaw  = chunksM.pop();
-  var bufPad  = new Buffer(BLOCK_SIZE / BIT_M);
+  var bufPad  = new Buffer((BLOCK_SIZE / BIT_M) - prefixLen);
+
+  var mLen    = bufM.length;
   var pLen    = bufPad.length;
-  var bLen    = bufRaw.length;
+  var rLen    = bufRaw.length;
 
   bufRaw.copy(bufPad);
 
   // Append the bit '1' to the message i.e. by adding 0x80 if characters are 8 bits. 
-  bufPad[bLen] = 0x80;
+  bufPad[rLen] = 0x80;
 
   // Append 0 ≤ k < 512 bits '0', thus the resulting message length (in bits)
   // is congruent to 448 (mod 512) 
-  bufPad.fill(0x00, bLen + 1);
+  bufPad.fill(0x00, rLen + 1);
+
+  // Append ml, in a 64-bit big-endian integer s.t message length is a multiple of 512 bits.
+  // NO OP                                      //write the high order bits (shifted over)
+  bufPad.writeUInt32BE((mLen + prefixLen) * BIT_M, pLen - 4); //write the low order bits
+
+  chunksM.push(bufPad);
+
+  return Buffer.concat(chunksM);
+}
+
+function padMD2(bufM, mLen) {
+  var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
+  var bufRaw  = chunksM.pop();
+  var bufPad  = new Buffer(BLOCK_SIZE / BIT_M);
+
+  var pLen    = bufPad.length;
+  var rLen    = bufRaw.length;
+
+  bufRaw.copy(bufPad);
+
+  // Append the bit '1' to the message i.e. by adding 0x80 if characters are 8 bits. 
+  bufPad[rLen] = 0x80;
+
+  // Append 0 ≤ k < 512 bits '0', thus the resulting message length (in bits)
+  // is congruent to 448 (mod 512) 
+  bufPad.fill(0x00, rLen + 1);
 
   // Append ml, in a 64-bit big-endian integer s.t message length is a multiple of 512 bits.
   // NO OP                                      //write the high order bits (shifted over)
@@ -138,24 +168,18 @@ function padMD(bufM, mLen) {
 //
 function forgeMAC(bufMac, bufOrig, bufAdd) {
   var REG_SIZE = 4;
-  // padding = md_padding_with_mlen(len(original) + sec_len)
-  // newmessage = original + padding + b';admin=true'
-  // hsh = sha1_modified(b';admin=true', a, b, c, d, e,\
-  //                           len(original) + len(padding) + sec_len)
   var hInitial = 
     utils.blocks(bufMac, REG_SIZE)
     .map(function(bufH) {
       return bufH.readUInt32BE(0);
     });
 
-  for (var kLen = 0; kLen < 1; kLen++) { 
-    var bufPad = padMD(bufOrig, kLen + bufOrig.length);
+  for (var kLen = 1; kLen < 64; kLen++) { 
+    var bufPad = padMD(bufOrig, kLen);
     var bufNew = Buffer.concat([bufPad, bufAdd]);
     var mLen   = kLen + bufPad.length + bufAdd.length;
     var tmpMac = digest(bufAdd, hInitial, mLen);
-    
-    console.log(bufNew.slice(-20))
-    console.log(bufPad.length)
+
     if (verify(tmpMac, bufNew)) {
       return { mac: tmpMac, msg: bufNew };
     }

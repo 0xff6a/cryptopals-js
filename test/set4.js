@@ -167,8 +167,10 @@ describe('Set 4', function() {
       var bufMac  = mac.SHA1.authenticate(bufOrig);
       var bufMod  = new Buffer(';admin=true');
       var forgery = mac.SHA1.forgeMAC(bufMac, bufOrig, bufMod);
-      // a031e37757a34f714a82b2ee3dcf93ba1dfebea5
-      console.log(forgery);
+      
+      // SHA-1 a031e37757a34f714a82b2ee3dcf93ba1dfebea5
+      expect(forgery.msg.toString()).to.contain(bufMod.toString());
+      expect(forgery.mac).to.eql(mac.SHA1.authenticate(forgery.msg));
     });
   });
 });

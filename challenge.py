@@ -120,6 +120,7 @@ def main():
     c = int(sha1hash[16:24], 16)
     d = int(sha1hash[24:32], 16)
     e = int(sha1hash[32:40], 16)
+    print a,b,c,d,e
 
     for sec_len in range(0, 64):
         padding = md_padding_with_mlen(len(original) + sec_len)
