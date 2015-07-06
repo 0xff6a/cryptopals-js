@@ -4,6 +4,7 @@ var expect     = require('expect.js');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
 var oracles    = require('../src/oracles.js');
+var mac        = require('../src/mac.js');
 
 describe('Set 4', function() {
   describe('Challenge 25 - Break r/w AES CTR', function() {
@@ -115,12 +116,24 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 28 - Implement SHA1 hash algorithm', function() {
+    it('should pad a message to 512 bits multiple', function() {
+      var bufM        = new Buffer(664 / 8).fill('A');
+      var bufExpected = new Buffer(
+        '41414141414141414141414141414141414141414141414141414141414141414141' + 
+        '41414141414141414141414141414141414141414141414141414141414141414141' +
+        '41414141414141414141414141414180000000000000000000000000000000000000' +
+        '0000000000000000000000000000000000000000000000000298', 'hex'
+      );
+
+      expect(mac.SHA1.pad(bufM)).to.eql(bufExpected);
+    });
+
     it('should produce the expected result', function() {
       var buf1 = new Buffer('cookin MCs like a pound of bacon');
       var buf2 = new Buffer('shall I compare thee to a summer\'s day');
 
-      expect(mac.SHA1.digest(buf1)).to.eql(new Buffer('c0f03429637de12c90f37e2c5c032276e477c51f'));
-      expect(mac.SHA1.digest(buf2)).to.eql(new Buffer('a528ca8d902931e2765f45f7a3d6242633057462'));
+      expect(mac.SHA1.digest(buf1)).to.eql(new Buffer('be120668f532ec01b9ca4d924999832281f79354', 'hex'));
+      expect(mac.SHA1.digest(buf2)).to.eql(new Buffer('1b0d1a96f5f7daba86d38a54e9dd02ccc1e57916', 'hex'));
     });
   });
 });
