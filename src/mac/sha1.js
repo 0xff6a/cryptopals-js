@@ -4,9 +4,7 @@ var BIT_M      = 8;
 var RET_SIZE   = 160;
 var BLOCK_SIZE = 512;
 var MASK       = 0xffffffff; // All arithmetic is modulo 2**32
-
-var H_SHA1 = 
-[
+var H_SHA1     = [
   0x67452301,
   0xEFCDAB89,
   0x98BADCFE,
@@ -20,9 +18,9 @@ var H_SHA1 =
 // Due to limitations in JS this will process messages up to 2**32 - 1 
 // size rather than 2**64 - 1
 //
-// Buffer[, Array(Number)] -> Buffer
+// Buffer[, Array(Number), Number] -> Buffer
 //
-function digest(bufM, hInitial) {
+function digest(bufM, hInitial, mLen) {
   
   // If no initial registers passed use the SHA-1 magic numbers
   if (hInitial === undefined) {
@@ -39,7 +37,7 @@ function digest(bufM, hInitial) {
   var hh = new Buffer(RET_SIZE / BIT_M);
 
   // Pre-processing (pad message to 512-bit blocks)
-  bufM = padMD(bufM);
+  bufM = padMD(bufM, mLen);
 
   // Process the message in successive 512-bit chunks:
   var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
@@ -63,7 +61,7 @@ function digest(bufM, hInitial) {
     }
 
     // Main loop calculating SHA function 80x
-    var registers = ShaRegisters([h0, h1, h2, h3, h4], words);
+    var registers = main([h0, h1, h2, h3, h4], words);
 
     // Add this chunk's hash to result so far:
     h0 = (h0 + registers[0]) & MASK;
@@ -83,12 +81,16 @@ function digest(bufM, hInitial) {
   return hh;
 }
 //
+// MAC Authentication secret
+//
+var SECRET = new Buffer('YELLOW SUBMARINE');
+//
 // Authenticate a message using a secret key prefix MAX
 //
 // Buffer, Buffer -> Buffer
 //
-function authenticate(bufM, bufKey) {
-  bufIn = Buffer.concat([bufKey, bufM]);
+function authenticate(bufM) {
+  bufIn = Buffer.concat([SECRET, bufM]);
 
   return digest(bufIn);
 }
@@ -97,21 +99,19 @@ function authenticate(bufM, bufKey) {
 //
 // Buffer, Buffer, Buffer -> Boolean
 //
-function verify(bufMac, bufM, bufKey) {
-  return bufMac.equals(authenticate(bufM, bufKey));
+function verify(bufMac, bufM) {
+  return bufMac.equals(authenticate(bufM));
 }
 //
-// Implements the SHA-1 padding scheme
+// Implements the SHA-1 padding scheme, accepts an optional fixed message length arg
 //
-// Buffer -> Buffer
+// Buffer, Number -> Buffer
 //
-function padMD(bufM) {
+function padMD(bufM, mLen) {
   var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
   var bufRaw  = chunksM.pop();
   var bufPad  = new Buffer(BLOCK_SIZE / BIT_M);
-  
   var pLen    = bufPad.length;
-  var mLen    = bufM.length;
   var bLen    = bufRaw.length;
 
   bufRaw.copy(bufPad);
@@ -125,32 +125,63 @@ function padMD(bufM) {
 
   // Append ml, in a 64-bit big-endian integer s.t message length is a multiple of 512 bits.
   // NO OP                                      //write the high order bits (shifted over)
-  bufPad.writeUInt32BE(mLen * BIT_M, pLen - 4); //write the low order bits
+  bufPad.writeUInt32BE((mLen || bufM.length) * BIT_M, pLen - 4); //write the low order bits
 
   chunksM.push(bufPad);
 
   return Buffer.concat(chunksM);
 }
+//
+// Forges a secret-prefix MAC given a message, original MAC and message to append
+//
+// Buffer, Buffer, Buffer -> Object
+//
+function forgeMAC(bufMac, bufOrig, bufAdd) {
+  var REG_SIZE = 4;
+  // padding = md_padding_with_mlen(len(original) + sec_len)
+  // newmessage = original + padding + b';admin=true'
+  // hsh = sha1_modified(b';admin=true', a, b, c, d, e,\
+  //                           len(original) + len(padding) + sec_len)
+  var hInitial = 
+    utils.blocks(bufMac, REG_SIZE)
+    .map(function(bufH) {
+      return bufH.readUInt32BE(0);
+    });
+
+  for (var kLen = 0; kLen < 1; kLen++) { 
+    var bufPad = padMD(bufOrig, kLen + bufOrig.length);
+    var bufNew = Buffer.concat([bufPad, bufAdd]);
+    var mLen   = kLen + bufPad.length + bufAdd.length;
+    var tmpMac = digest(bufAdd, hInitial, mLen);
+    
+    console.log(bufNew.slice(-20))
+    console.log(bufPad.length)
+    if (verify(tmpMac, bufNew)) {
+      return { mac: tmpMac, msg: bufNew };
+    }
+  }
+}
 
 exports.digest       = digest;
 exports.padMD        = padMD;
 exports.authenticate = authenticate;
-exports.verify = verify;
+exports.verify       = verify;
+exports.forgeMAC     = forgeMAC;
 
 // ================================================================================================
 // ================================================================================================
 
 function bitRotateL(number, shift) {
-  return (number << shift) | (number >>> (32 - shift));
+  return (number << shift) | (number >>> (32 - shift)) & MASK;
 }
 
-function ShaRegisters(hInitial, words) {
+function main(h, words) {
   // Initialize hash values for this chunk:
-  var a = hInitial[0];
-  var b = hInitial[1];
-  var c = hInitial[2];
-  var d = hInitial[3];
-  var e = hInitial[4];
+  var a = h[0];
+  var b = h[1];
+  var c = h[2];
+  var d = h[3];
+  var e = h[4];
 
   // Main loop calculating SHA function 80x
   for (i = 0; i < 80; i++) {

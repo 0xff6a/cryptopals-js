@@ -116,9 +116,7 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 28 - Implement SHA1 hash algorithm', function() {
-    var bufKey = new Buffer('YELLOW SUBMARINE');
     var bufM   = new Buffer('We all live in a what?');
-    var bufPt  = Buffer.concat([bufKey, bufM]);
 
     it('should pad a message to 512 bits multiple', function() {
       var bufM        = new Buffer(664 / 8).fill('A');
@@ -145,22 +143,32 @@ describe('Set 4', function() {
     });
 
     it('should produce a MAC given a message and secret key', function() {
-      expect(mac.SHA1.authenticate(bufM, bufKey)).to.eql(
+      var bufPt  = Buffer.concat([new Buffer('YELLOW SUBMARINE'), bufM]);
+
+      expect(mac.SHA1.authenticate(bufM)).to.eql(
         mac.SHA1.digest(bufPt)
       );
     });
 
     it('should verify a mac given message and key', function() {
       var bad  = crypto.randomBytes(20);
-      var good = mac.SHA1.authenticate(bufM, bufKey);
+      var good = mac.SHA1.authenticate(bufM);
       
-      expect(mac.SHA1.verify(bad, bufM, bufKey)).to.eql(false);
-      expect(mac.SHA1.verify(good, bufM, bufKey)).to.eql(true);
+      expect(mac.SHA1.verify(bad, bufM)).to.eql(false);
+      expect(mac.SHA1.verify(good, bufM)).to.eql(true);
     });
   });
 
   describe('Challenge 29 - break SHA1 MAC using key length extension', function() {
-    // fix sha registers
-    // recalculate the hash!
+    it('should forge an extended url string with a valid MAC', function() {
+      var bufOrig = new Buffer(
+        'comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon'
+      );
+      var bufMac  = mac.SHA1.authenticate(bufOrig);
+      var bufMod  = new Buffer(';admin=true');
+      var forgery = mac.SHA1.forgeMAC(bufMac, bufOrig, bufMod);
+      // a031e37757a34f714a82b2ee3dcf93ba1dfebea5
+      console.log(forgery);
+    });
   });
 });
