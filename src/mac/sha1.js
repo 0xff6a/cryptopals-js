@@ -167,12 +167,7 @@ function padMD2(bufM, mLen) {
 // Buffer, Buffer, Buffer -> Object
 //
 function forgeMAC(bufMac, bufOrig, bufAdd) {
-  var REG_SIZE = 4;
-  var hInitial = 
-    utils.blocks(bufMac, REG_SIZE)
-    .map(function(bufH) {
-      return bufH.readUInt32BE(0);
-    });
+  var hInitial = int32blocks(bufMac);
 
   for (var kLen = 1; kLen < 64; kLen++) { 
     var bufPad = padMD(bufOrig, kLen);
@@ -197,6 +192,14 @@ exports.forgeMAC     = forgeMAC;
 
 function bitRotateL(number, shift) {
   return (number << shift) | (number >>> (32 - shift)) & MASK;
+}
+
+function int32blocks(buf) {
+  return utils
+          .blocks(buf, 4)
+          .map(function(b) {
+            return b.readUInt32BE(0);
+          });
 }
 
 function main(h, words) {
