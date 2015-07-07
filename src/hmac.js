@@ -54,9 +54,25 @@ function insecureCompare(bufHmac, bufKey, bufM) {
 
   return true;
 }
+//
+// Discovers an HMAC through timing attack
+//
+// Function, String -> Buffer
+//
+function timingDiscovery(fMac, sUrl) {
+  var baseSignature = fMac(new Buffer(''));
+
+  // for each byte of the base signature
+  // guess the value of the target byte (0-255)
+  // send to app
+  // record longest response time
+  // pick that as the correct value
+  // repeat
+}
 
 exports.digest          = digest;
 exports.insecureCompare = insecureCompare;
+exports.timingDiscovery = timingDiscovery;
 
 // ================================================================================================
 // ================================================================================================
