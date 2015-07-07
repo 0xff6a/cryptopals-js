@@ -6,6 +6,17 @@ module.exports = function(grunt) {
     jshint: {
       files: [ 'Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
     },
+    run: {
+       hmacApp: {
+         options: {
+           wait: false
+         },
+         // cmd: "node", // but that's the default 
+         args: [
+          'src/hmacApp.js'
+        ]
+      }
+    },
     mochaTest: {
       test: {
         options: {
@@ -31,8 +42,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-run');
 
   // Register Tasks
-  grunt.registerTask('default', ['mochaTest', 'jshint']);
-  grunt.registerTask('test', ['mochaTest']);
+  grunt.registerTask('default', [ 'run:hmacApp', 'mochaTest', 'jshint']);
+  grunt.registerTask('test', ['run:hmacApp', 'mochaTest']);
 };

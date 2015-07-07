@@ -5,7 +5,6 @@ var md      = require('./utils/md.js');
 var prg     = require('./utils/MersenneTwister.js');
 var o       = require('./utils/BlackBox.js');
 var webApp  = require('./utils/webApp.js');
-var hmacApp = require('./utils/hmacApp.js');
 //
 // Buffer, Number -> Array(Buffer)
 //
@@ -60,7 +59,6 @@ exports.md      = md;
 exports.prg     = prg;
 exports.o       = o;
 exports.webApp  = webApp;
-exports.hmacApp = hmacApp;
 
 // Functions
 exports.blocks    = blocks;

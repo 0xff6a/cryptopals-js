@@ -1,6 +1,7 @@
 var fs         = require('fs');
 var crypto     = require('crypto');
 var expect     = require('expect.js');
+var http       = require('http');
 var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
 var oracles    = require('../src/oracles.js');
@@ -190,8 +191,52 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 31 - break HMAC-SHA1 with artificial timing leak', function() {
-    it('should return the expected HMAC-SHA1 digest', function() {
-      
+    it('should return the expected HMAC-SHA1 digest as per RFC 2202', function() {
+      // Test Case I
+      var bufKey = new Buffer('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b', 'hex');
+      var data   = new Buffer("Hi There");
+      var digest = new Buffer('b617318655057264e28bc0b6fb378c8ef146be00', 'hex');
+      expect(hmac.digest(mac.SHA1.digest, bufKey, data)).to.eql(digest);
+
+      // Test Case II
+      bufKey = new Buffer("Jefe");
+      data   = new Buffer("what do ya want for nothing?");
+      digest = new Buffer('effcdf6ae5eb2fa2d27416d5f184df9c259a7c79', 'hex');
+
+      expect(hmac.digest(mac.SHA1.digest, bufKey, data)).to.eql(digest);
+
+      // Test Case III
+      bufKey = new Buffer('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex');
+      data   = new Buffer(50).fill(0xdd);
+      digest = new Buffer('125d7342b9ac11cd91a39af48aa17b4f63f175d3', 'hex');
+
+      expect(hmac.digest(mac.SHA1.digest, bufKey, data)).to.eql(digest);
+    });
+
+    it('the app should return a 500 status if HMAC is invalid', function(done) {
+      var url  = 
+        'http://localhost:9000/test?file=Jefe&signature=' + 
+        'effcdf6ae5eb2fa2d27416d5f184df9c259a7c79';
+
+      http.get(url, function(res) {
+        expect(res.statusCode).to.eql(500);
+        done();
+      });
+    });
+
+    it('the app should return a 200 status if the HMAC is valid', function(done) {
+      var url = 
+        'http://localhost:9000/test?file=Jefe&signature=' +
+        'efc0ecef8b4bca37abc4325697b4c8ac47d148be';
+
+      http.get(url, function(res) {
+        expect(res.statusCode).to.eql(200);
+        done();
+      });
+    });
+
+    it('should discover the valid mac for any file through a timing attack', function(done) {
+      done();
     });
   });
 });

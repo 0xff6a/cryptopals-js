@@ -9,13 +9,20 @@
 // Verifies that signature on incoming request is valid for file
 //
 // ================================================================================================
+
 var http = require('http');
 var url  = require('url');
+var hmac = require('./hmac.js');
+var mac  = require('./mac.js'); 
+//
+// Secret Key
+//
+var KEY = new Buffer('SUPER SECRET');
 //
 // Server
 //
 var httpServer = (function() {
-  module = {};
+  var module = {};
 
   module.start = function(route, handle) {
     function onRequest(req, res) {
@@ -36,7 +43,7 @@ var httpServer = (function() {
 // Routes
 //
 var Router = (function() {
-  module = {}
+  var module = {};
 
   module.route = function(handle, pathname, req, res) {
     if (typeof handle[pathname] === 'function') {
@@ -53,15 +60,30 @@ var Router = (function() {
 // Request Handling 
 //
 var RequestHandler = (function() {
-  module = {};
+  var module = {};
+
+  function validHmac(req, res) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write('[+] Valid Signature');
+    res.end();
+  }
+
+  function badHmac(req, res) {
+    res.writeHead(500, {'Content-Type': 'text/plain'});
+    res.write('[-] Bad Signature!');
+    res.end();
+  }
 
   module.test = function(req, res) {
-    // HMAC logic
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.write('[+] Params: ');
-    res.write('file:' + url.parse(req.url, true).query.file);
-    res.write(' signature:' + url.parse(req.url, true).query.sign);
-    res.end();
+    var query     = url.parse(req.url, true).query;
+    var signature = new Buffer(query.signature, 'hex');
+    var data      = new Buffer(query.file);
+
+    if (hmac.insecureCompare(signature, KEY, data)) {
+      validHmac(req, res);
+    } else {
+      badHmac(req, res);
+    }
   };
 
   module.notFound = function(req, res) {
@@ -78,6 +100,8 @@ var RequestHandler = (function() {
 //
 var PORT   = 9000;
 var handle = {};
+
+console.log('[+] Starting HMAC application on port ' + PORT);
 
 handle['/test'] = RequestHandler.test;
 handle['404']   = RequestHandler.notFound;
