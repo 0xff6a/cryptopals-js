@@ -127,7 +127,7 @@ describe('Set 4', function() {
         '0000000000000000000000000000000000000000000000000298', 'hex'
       );
 
-      expect(mac.SHA1.padMD(bufM)).to.eql(bufExpected);
+      expect(utils.md.pad(bufM)).to.eql(bufExpected);
     });
 
     it('should produce the expected message digest', function() {
@@ -173,4 +173,19 @@ describe('Set 4', function() {
       expect(forgery.mac).to.eql(mac.SHA1.authenticate(forgery.msg));
     });
   });
+
+  describe('Challenge 30 - break MD4 MAC using key length extension', function() {
+    it('should generate the expected output as per RFC 1320', function() {
+      expect(mac.MD4.digest(new Buffer("")))
+        .to.eql(new Buffer('31d6cfe0d16ae931b73c59d7e0c089c0', 'hex'));
+      expect(mac.MD4.digest(new Buffer("message digest")))
+        .to.eql(new Buffer('d9130a8164549fe818874806e1c7014b', 'hex'));
+      expect(mac.MD4.digest(new Buffer("abcdefghijklmnopqrstuvwxyz")))
+        .to.eql(new Buffer('d79e1c308aa5bbcdeea8ed63df412da9', 'hex'));
+    });
+
+    it.skip('should forge an extended url string with a valid MAC', function() {
+    });
+  });
 });
+

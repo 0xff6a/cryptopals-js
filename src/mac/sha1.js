@@ -1,5 +1,4 @@
 var utils  = require('../utils.js');
-var bignum = require('bignum');
 
 var BIT_M      = 8;
 var RET_SIZE   = 160;
@@ -37,7 +36,7 @@ function digest(bufM, hInitial, mLen) {
   var hh = new Buffer(RET_SIZE / BIT_M);
 
   // Pre-processing (pad message to 512-bit blocks)
-  bufM = padMD(bufM, { mLen: mLen });
+  bufM = utils.md.pad(bufM, { mLen: mLen });
 
   // Process the message in successive 512-bit chunks:
   var chunksM = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
@@ -103,41 +102,6 @@ function verify(bufMac, bufM) {
   return bufMac.equals(authenticate(bufM));
 }
 //
-// Implements the SHA-1 padding scheme, accepts an options object that defines:
-//  -> fixed message length
-//  -> fixed message prefix length
-//
-// Buffer, Number -> Buffer
-//
-function padMD(bufM, options) {
-  var opt       = options || {};
-  var prefixLen = opt.prefixLen || 0;
-  var mLen      = opt.mLen || bufM.length;
-
-  var chunksM   = utils.blocks(bufM, BLOCK_SIZE / BIT_M);
-  var bufRaw    = chunksM.pop();
-  var rLen      = bufRaw.length;
-  var bufPad    = new Buffer((BLOCK_SIZE / BIT_M) - prefixLen);
-  
-  bufRaw.copy(bufPad);
-
-  // Append the bit '1' to the message i.e. by adding 0x80 if characters are 8 bits. 
-  bufPad[rLen] = 0x80;
-
-  // Append 0 ≤ k < 512 bits '0', thus the resulting message length (in bits)
-  // is congruent to 448 (mod 512) 
-  bufPad.fill(0x00, rLen + 1);
-
-  // Append ml, in a 64-bit big-endian integer s.t message length is a multiple of 512 bits.
-  bignum((mLen + prefixLen) * BIT_M)
-    .toBuffer({ endian: 'big', size: 8 /* 8-byte / 64-bit */ })
-    .copy(bufPad, bufPad.length - 8);
-
-  chunksM.push(bufPad);
-
-  return Buffer.concat(chunksM);
-}
-//
 // Forges a secret-prefix MAC given a message, original MAC and message to append
 //
 // Buffer, Buffer, Buffer -> Object
@@ -146,7 +110,7 @@ function forgeMAC(bufMac, bufOrig, bufAdd) {
   var hInitial = int32blocks(bufMac);
 
   for (var kLen = 1; kLen < 64; kLen++) { 
-    var bufPad = padMD(bufOrig, { prefixLen: kLen });
+    var bufPad = utils.md.pad(bufOrig, { prefixLen: kLen });
     var bufNew = Buffer.concat([bufPad, bufAdd]);
     var mLen   = kLen + bufPad.length + bufAdd.length;
     var tmpMac = digest(bufAdd, hInitial, mLen);
@@ -158,7 +122,6 @@ function forgeMAC(bufMac, bufOrig, bufAdd) {
 }
 
 exports.digest       = digest;
-exports.padMD        = padMD;
 exports.authenticate = authenticate;
 exports.verify       = verify;
 exports.forgeMAC     = forgeMAC;
