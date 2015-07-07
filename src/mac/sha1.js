@@ -125,6 +125,7 @@ exports.digest       = digest;
 exports.authenticate = authenticate;
 exports.verify       = verify;
 exports.forgeMAC     = forgeMAC;
+exports.BLOCK_SIZE   = BLOCK_SIZE;
 
 // ================================================================================================
 // ================================================================================================

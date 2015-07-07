@@ -58,7 +58,9 @@ var RequestHandler = (function() {
   module.test = function(req, res) {
     // HMAC logic
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.write('[+] Params: ' + url.parse(req.url).query);
+    res.write('[+] Params: ');
+    res.write('file:' + url.parse(req.url, true).query.file);
+    res.write(' signature:' + url.parse(req.url, true).query.sign);
     res.end();
   };
 

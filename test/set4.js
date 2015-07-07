@@ -5,6 +5,7 @@ var utils      = require('../src/utils.js');
 var encryption = require('../src/encryption.js');
 var oracles    = require('../src/oracles.js');
 var mac        = require('../src/mac.js');
+var hmac       = require('../src/hmac.js');
 
 describe('Set 4', function() {
   describe('Challenge 25 - Break r/w AES CTR', function() {
@@ -175,7 +176,7 @@ describe('Set 4', function() {
   });
 
   describe('Challenge 30 - break MD4 MAC using key length extension', function() {
-    it('should generate the expected output as per RFC 1320', function() {
+    it.skip('should generate the expected output as per RFC 1320', function() {
       expect(mac.MD4.digest(new Buffer("")))
         .to.eql(new Buffer('31d6cfe0d16ae931b73c59d7e0c089c0', 'hex'));
       expect(mac.MD4.digest(new Buffer("message digest")))
@@ -187,5 +188,12 @@ describe('Set 4', function() {
     it.skip('should forge an extended url string with a valid MAC', function() {
     });
   });
+
+  describe('Challenge 31 - break HMAC-SHA1 with artificial timing leak', function() {
+    it('should return the expected HMAC-SHA1 digest', function() {
+      
+    });
+  });
 });
+
 
