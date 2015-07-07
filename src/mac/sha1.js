@@ -4,17 +4,19 @@ var bignum = require('bignum');
 var BIT_M      = 8;
 var RET_SIZE   = 160;
 var BLOCK_SIZE = 512;
-var MASK       = 0xffffffff; // All arithmetic is modulo 2**32
-var H_SHA1     = [
-  0x67452301,
-  0xEFCDAB89,
-  0x98BADCFE,
-  0x10325476,
-  0xC3D2E1F0
-];
+var MASK       = 0xffffffff;
+var H_SHA1     =  [
+                    0x67452301,
+                    0xEFCDAB89,
+                    0x98BADCFE,
+                    0x10325476,
+                    0xC3D2E1F0
+                  ];
 //
-// Generates a SHA-1 digest given a message buffer. 
-// Accepts fixed registers and prefix length as optional arguments
+// Generates a SHA-1 digest given a message buffer. Accepts fixed registers 
+// and prefix length as optional arguments.
+//
+// NB: due to JS limitations message size is restricted to 2**53 -1
 //
 // Buffer[, Array(Number), Number] -> Buffer
 //
@@ -127,10 +129,9 @@ function padMD(bufM, options) {
   bufPad.fill(0x00, rLen + 1);
 
   // Append ml, in a 64-bit big-endian integer s.t message length is a multiple of 512 bits.
-  // write the high order bits (shifted over)
-  // NO OP  
-  // write the low order bits                                    
-  bufPad.writeUInt32BE((mLen + prefixLen) * BIT_M, bufPad.length - 4); 
+  bignum((mLen + prefixLen) * BIT_M)
+    .toBuffer({ endian: 'big', size: 8 /* 8-byte / 64-bit */ })
+    .copy(bufPad, bufPad.length - 8);
 
   chunksM.push(bufPad);
 
