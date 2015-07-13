@@ -1,6 +1,9 @@
 var utils = require('./utils.js');
 var mac   = require('./mac.js');
 var sleep = require('sleep');
+var http  = require('http');
+var Q     = require('q');
+var _     = require('underscore');
 //
 // Block size for supported MACs : SHA1 & MD4
 //
@@ -60,14 +63,14 @@ function insecureCompare(bufHmac, bufKey, bufM) {
 // Function, String -> Buffer
 //
 function timingDiscovery(fMac, sUrl) {
-  var baseSignature = fMac(new Buffer(''));
+  var baseSign  = fMac(new Buffer(1));
+  var validHmac = baseSign;
 
-  // for each byte of the base signature
-  // guess the value of the target byte (0-255)
-  // send to app
-  // record longest response time
-  // pick that as the correct value
-  // repeat
+  // for (var i = 0; i < baseSign.length; i++) {
+    validHmac[0] = guessByte(0, validHmac, sUrl);
+  // }
+
+  return validHmac;
 }
 
 exports.digest          = digest;
@@ -76,6 +79,35 @@ exports.timingDiscovery = timingDiscovery;
 
 // ================================================================================================
 // ================================================================================================
+
+
+function guessByte(index, bufMac, sUrl) {
+  var newMac  = new Buffer(bufMac);
+  var resTime = {};
+  var guesses = _.range(0, 256);
+  var validByte;
+  
+  async.forEachSeries(guesses, function(g, done) {
+    var initT = timestamp();
+    newMac[index] = g;
+
+    http.get(sUrl + newMac.toString('hex'), function(res) {
+      var deltaT      = timestamp() - initT;
+      resTime[deltaT] = g; 
+      done();
+    });
+  },
+  function(err, results) {
+    console.log(resTime)
+    validByte = resTime[Object.keys(resTime).sort().slice(-1)];
+    console.log('finised');
+    console.log(validByte);
+  });
+}
+
+function timestamp() {
+  return new Date().getTime();
+}
 
 function pad0x00(buf, nSize) {
   bufTmp = new Buffer(nSize).fill(0x00);

@@ -240,7 +240,6 @@ describe('Set 4', function() {
 
       expect(hmac.timingDiscovery(mac.SHA1.digest, base_uri))
         .to.eql(new Buffer('efc0ecef8b4bca37abc4325697b4c8ac47d148be', 'hex'));
-      done();
     });
   });
 });
