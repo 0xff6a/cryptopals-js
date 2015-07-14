@@ -63,8 +63,8 @@ function keyExchange(oAlice, oBob, p, g) {
 function secureMessageExchange(oAlice, oBob, p, g) {
   keyExchange(oAlice, oBob, p, g);
   
-  oAlice.send(oBob);
-  oBob.send(oAlice);
+  oAlice.transmit(oBob);
+  oBob.transmit(oAlice);
 }
 
 exports.keyPair               = keyPair;

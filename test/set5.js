@@ -33,42 +33,48 @@ describe('Set 5', function() {
   });
 
   describe('Challenge 34 - Implement DH MITM key fixing attack', function() {
-    var sendEncrypted = function(oReceiver) {
-      var bufIv = crypto.randomBytes(16);
-      var bufCt = encryption.aesCBC.encrypt(
-        new Buffer(this.transmit),
-        this.secret.slice(0,16),
-        bufIv
-      );
+    var p = encryption.diffieHellman.P_NIST;
+    var g = encryption.diffieHellman.G_NIST;
+    var alice;
+    var bob;
 
-      oReceiver.encrypted = Buffer.concat([bufIv, bufCt]);
-    };
+    beforeEach(function() {
+      // Create our alice and bob actors
+      var sendEncrypted = function(oReceiver) {
+        var bufIv = crypto.randomBytes(16);
+        var bufCt = encryption.aesCBC.encrypt(
+          new Buffer(this.message),
+          this.secret.slice(0,16),
+          bufIv
+        );
 
-    var readEncrypted = function() {
-      var bufCt = this.encrypted.slice(16);
-      var bufIv = this.encrypted.slice(0, 16);
+        oReceiver.encrypted = Buffer.concat([bufIv, bufCt]);
+      };
 
-      this.received = encryption.aesCBC.decrypt(
-        bufCt,
-        this.secret.slice(0,16),
-        bufIv
-      );
+      var readEncrypted = function() {
+        var bufCt = this.encrypted.slice(16);
+        var bufIv = this.encrypted.slice(0, 16);
 
-      return this.received;
-    };
+        return encryption.aesCBC.decrypt(
+          bufCt,
+          this.secret.slice(0,16),
+          bufIv
+        );
+      };
 
-    var alice = { 
-      transmit: 'This DH stuff is unhackeable!', 
-      send: sendEncrypted, 
-      read: readEncrypted 
-    };
+      alice = { 
+        message: 'This DH stuff is unhackeable!', 
+        transmit: sendEncrypted, 
+        receive: readEncrypted 
+      };
 
-    var bob   = { 
-      transmit: 'You sure about that?', 
-      send: sendEncrypted, 
-      read: readEncrypted 
-    };
-
+      bob = { 
+        message: 'You sure about that?', 
+        transmit: sendEncrypted, 
+        receive: readEncrypted 
+      };
+    });
+      
     it('should implement a message exchange protocol using DH', function() {
       // Secure message exchange protocol
       //
@@ -80,17 +86,14 @@ describe('Set 5', function() {
       // Send AES-CBC(SHA1(s)[0:16], iv=random(16), msg) + iv
       // B->A
       // Send AES-CBC(SHA1(s)[0:16], iv=random(16), A's msg) + iv
-      //
-      var p     = encryption.diffieHellman.P_NIST;
-      var g     = encryption.diffieHellman.G_NIST;
-      
+      // 
       encryption.diffieHellman.secureMessageExchange(alice, bob, p, g);
 
-      expect(alice.read().toString()).to.eql(bob.transmit);
-      expect(bob.read().toString()).to.eql(alice.transmit);
+      expect(alice.receive().toString()).to.eql(bob.message);
+      expect(bob.receive().toString()).to.eql(alice.message);
     });
 
-    it.skip('should implement a MITM attack against the protocol to retrieve the message', function() {
+    it('should implement a MITM attack against the protocol to retrieve the message', function() {
       //
       // MITM intercept replaces A,B with intercepted p
       // Secret key = A**a mod p = p**a mod p ... oh wait that's always 0!!
@@ -112,6 +115,11 @@ describe('Set 5', function() {
       // M->A
       // Relay that to A
       //
+      var aKeys = keyPair(p, g);
+      var bKeys = keyPair(p, g);
+      var eKeys = { publicKey: p, secret: 1 }; /* secret could be any value here */
+      
+      
 
     });
   });
