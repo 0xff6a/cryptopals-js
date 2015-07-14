@@ -13,26 +13,106 @@ describe('Set 5', function() {
       var g  = bignum(5);
       
       // Generate the public/private key pairs for A and B
-      var A  = encryption.diffieHellman.keyPair(p, g);
-      var B  = encryption.diffieHellman.keyPair(p, g);
+      var alice = encryption.diffieHellman.keyPair(p, g);
+      var bob   = encryption.diffieHellman.keyPair(p, g);
 
       // Calculate the shared key based on the others public key and own secret key
-      var sA = encryption.diffieHellman.sharedKey(A.secretKey, B.publicKey, p); 
-      var sB = encryption.diffieHellman.sharedKey(B.secretKey, A.publicKey, p);
+      var sA = encryption.diffieHellman.sharedKey(alice.secretKey, bob.publicKey, p); 
+      var sB = encryption.diffieHellman.sharedKey(bob.secretKey, alice.publicKey, p);
 
       expect(sA).to.eql(sB);
     });
 
-    it('should implement DH using NIST params by default', function() {
-      // Generate the public/private key pairs for A and B
-      var A  = encryption.diffieHellman.keyPair();
-      var B  = encryption.diffieHellman.keyPair();
+    it('should implement DH key exchange using NIST params by default', function() {
+      var alice    = {};
+      var bob      = {};
+      
+      expect(encryption.diffieHellman.keyExchange(alice, bob)).to.be(true); 
+      expect(alice.secret).to.eql(bob.secret);
+    });
+  });
 
-      // Calculate the shared key based on the others public key and own secret key
-      var sA = encryption.diffieHellman.sharedKey(A.secretKey, B.publicKey); 
-      var sB = encryption.diffieHellman.sharedKey(B.secretKey, A.publicKey);
+  describe('Challenge 34 - Implement DH MITM key fixing attack', function() {
+    var sendEncrypted = function(oReceiver) {
+      var bufIv = crypto.randomBytes(16);
+      var bufCt = encryption.aesCBC.encrypt(
+        new Buffer(this.transmit),
+        this.secret.slice(0,16),
+        bufIv
+      );
 
-      expect(sA).to.eql(sB);
+      oReceiver.encrypted = Buffer.concat([bufIv, bufCt]);
+    };
+
+    var readEncrypted = function() {
+      var bufCt = this.encrypted.slice(16);
+      var bufIv = this.encrypted.slice(0, 16);
+
+      this.received = encryption.aesCBC.decrypt(
+        bufCt,
+        this.secret.slice(0,16),
+        bufIv
+      );
+
+      return this.received;
+    };
+
+    var alice = { 
+      transmit: 'This DH stuff is unhackeable!', 
+      send: sendEncrypted, 
+      read: readEncrypted 
+    };
+
+    var bob   = { 
+      transmit: 'You sure about that?', 
+      send: sendEncrypted, 
+      read: readEncrypted 
+    };
+
+    it('should implement a message exchange protocol using DH', function() {
+      // Secure message exchange protocol
+      //
+      // A->B
+      // Send "p", "g", "A"
+      // B->A
+      // Send "B"
+      // A->B
+      // Send AES-CBC(SHA1(s)[0:16], iv=random(16), msg) + iv
+      // B->A
+      // Send AES-CBC(SHA1(s)[0:16], iv=random(16), A's msg) + iv
+      //
+      var p     = encryption.diffieHellman.P_NIST;
+      var g     = encryption.diffieHellman.G_NIST;
+      
+      encryption.diffieHellman.secureMessageExchange(alice, bob, p, g);
+
+      expect(alice.read().toString()).to.eql(bob.transmit);
+      expect(bob.read().toString()).to.eql(alice.transmit);
+    });
+
+    it.skip('should implement a MITM attack against the protocol to retrieve the message', function() {
+      //
+      // MITM intercept replaces A,B with intercepted p
+      // Secret key = A**a mod p = p**a mod p ... oh wait that's always 0!!
+      //
+      // A->M
+      // Send "p", "g", "A"
+      // M->B
+      // Send "p", "g", "p"
+      // B->M
+      // Send "B"
+      // M->A
+      // Send "p"
+      // A->M
+      // Send AES-CBC(SHA1(s)[0:16], iv=random(16), msg) + iv
+      // M->B
+      // Relay that to B
+      // B->M
+      // Send AES-CBC(SHA1(s)[0:16], iv=random(16), A's msg) + iv
+      // M->A
+      // Relay that to A
+      //
+
     });
   });
 });
