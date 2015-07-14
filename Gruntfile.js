@@ -24,7 +24,7 @@ module.exports = function(grunt) {
           quiet: false,
           clearRequireCache: false
         },
-        src: ['test/**/*.js']
+        src: ['test/set5.js']
       }
     },
     watch: {

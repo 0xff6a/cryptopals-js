@@ -98,10 +98,7 @@ function guessByte(index, bufMac, sUrl) {
     });
   },
   function(err, results) {
-    console.log(resTime)
     validByte = resTime[Object.keys(resTime).sort().slice(-1)];
-    console.log('finised');
-    console.log(validByte);
   });
 }
 
