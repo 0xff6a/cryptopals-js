@@ -238,6 +238,7 @@ describe('Set 4', function() {
     it('should discover the valid mac for any file through a timing attack', function(done) {
       var base_uri = 'http://localhost:9000/test?file=Jefe&signature=';
 
+      //Call external script as node is bad at this
       expect(hmac.timingDiscovery(mac.SHA1.digest, base_uri))
         .to.eql(new Buffer('efc0ecef8b4bca37abc4325697b4c8ac47d148be', 'hex'));
     });
