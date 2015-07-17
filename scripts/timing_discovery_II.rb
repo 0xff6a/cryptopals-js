@@ -71,6 +71,7 @@ def guess_next_byte(url, mac)
     print "[+] Calculating..." + tmp_mac + "\r"
     
     if t > result.time
+      puts t
       result.time = t
       result.mac  = tmp_mac
     end
@@ -85,6 +86,7 @@ end
 puts "[+] Starting statistical timing attack...(this will take a while)"
 
 valid_mac = ascii_s(base_mac).chars.reduce('') do |mac, char|
+  sleep 0.5
   mac = guess_next_byte(url, mac)
 end
 
