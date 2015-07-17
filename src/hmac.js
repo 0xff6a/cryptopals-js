@@ -8,7 +8,7 @@ var _     = require('underscore');
 // Block size for supported MACs : SHA1 & MD4
 //
 var BLOCK_SIZE = 64;
-var DELAY      = 50000; //microseconds
+var DELAY      = 5000; //microseconds
 //
 // Produces a keyed-hash message authentication code using a passed in hash function
 // and secret key

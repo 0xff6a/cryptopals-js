@@ -235,12 +235,29 @@ describe('Set 4', function() {
       });
     });
 
-    it('should discover the valid mac for any file through a timing attack', function(done) {
-      var base_uri = 'http://localhost:9000/test?file=Jefe&signature=';
+    it('should discover the valid mac for any file through a timing attack with 50ms delay', function() {
+      // Do this through an external script as node sucks at this kind of thing and it's very slow (30mins)!
+      //
+      // Script in /scripts/timing_discovery.rb
+      //
+      // Usage: #{__FILE__} <target url> <mac guess>
+      //
+      // $ ./timing_discovery.rb 'http://localhost:9000/test?file=Jefe&signature=' 'effcdf6ae5eb2fa2d27416d5f184df9c259a7c79'
+      // [+] Starting timing attack....
+      // [+] Calculating...efc0ecef8b4bca37abc4325697b4c8ac47d148ff
+      // [+] Done
+      // [+] Checking validity....
+      // [+] Success: efc0ecef8b4bca37abc4325697b4c8ac47d148be
+    });
+  });
 
-      //Call external script as node is bad at this
-      expect(hmac.timingDiscovery(mac.SHA1.digest, base_uri))
-        .to.eql(new Buffer('efc0ecef8b4bca37abc4325697b4c8ac47d148be', 'hex'));
+  describe('Challenge 32 - Break HMAC-SHA1 with less artificial timing leak', function() {
+    it('should discover the valid mac for any file through a timing attack with 5ms delay', function() {
+      // A more sophisticated version of the previous challenge. Rather than a single request use multiple and
+      // compare average response times
+      //
+      // Script in /scripts/timing_discovery_II.rb
+      //
     });
   });
 });

